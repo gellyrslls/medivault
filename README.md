@@ -10,9 +10,9 @@
     A full-stack application for managing pharmacy inventory and suppliers
     <br />
     <br />
-    <a href="https://github.com/your-username/pharmacy-inventory/issues">Report Bug</a>
+    <a href="https://github.com/gellyrslls/pharmacy-inventory/issues">Report Bug</a>
     ·
-    <a href="https://github.com/your-username/pharmacy-inventory/issues">Request Feature</a>
+    <a href="https://github.com/gellyrslls/pharmacy-inventory/issues">Request Feature</a>
   </p>
 </div>
 
@@ -42,7 +42,7 @@ An inventory management system built for small pharmacies. Track medications, ma
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/your-username/pharmacy-inventory.git
+   git clone https://github.com/gellyrslls/pharmacy-inventory.git
    ```
 2. Install packages
    ```sh
@@ -84,10 +84,10 @@ An inventory management system built for small pharmacies. Track medications, ma
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/your-username/pharmacy-inventory.svg?style=for-the-badge
-[contributors-url]: https://github.com/your-username/pharmacy-inventory/graphs/contributors
-[license-shield]: https://img.shields.io/github/license/your-username/pharmacy-inventory.svg?style=for-the-badge
-[license-url]: https://github.com/your-username/pharmacy-inventory/blob/master/LICENSE
+[contributors-shield]: https://img.shields.io/github/contributors/gellyrslls/pharmacy-inventory.svg?style=for-the-badge
+[contributors-url]: https://github.com/gellyrslls/pharmacy-inventory/graphs/contributors
+[license-shield]: https://img.shields.io/github/license/gellyrslls/pharmacy-inventory.svg?style=for-the-badge
+[license-url]: https://github.com/gellyrslls/pharmacy-inventory/blob/master/LICENSE
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
 [Node.js]: https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white
