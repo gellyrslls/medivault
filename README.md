@@ -71,11 +71,28 @@ pharmacy-inventory/
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Commit Convention
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+```sh
+feat: add feature
+fix: bug fix
+docs: documentation changes
+style: formatting, missing semicolons, etc
+```
+
+### Branch Strategy
+```
+main
+└── development
+    ├── feature/auth
+    ├── feature/products
+    └── feature/reports
+```
+
+1. Create your feature branch (`git checkout -b feature/amazing-feature`)
+2. Commit using the convention above
+3. Push to the branch (`git push origin feature/amazing-feature`)
+4. Create Pull Request to development branch
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
