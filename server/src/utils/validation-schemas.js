@@ -31,8 +31,21 @@ const changePasswordSchema = Joi.object({
   }),
 });
 
+const productSchema = Joi.object({
+  name: Joi.string().required().trim(),
+  sku: Joi.string().required().trim(),
+  category: Joi.string().valid("OTC", "Prescription").required(),
+  quantity: Joi.number().min(0).required(),
+  minStockLevel: Joi.number().min(0).required(),
+  price: Joi.number().min(0).required(),
+  expiryDate: Joi.date().greater("now").required(),
+  supplierId: Joi.string().required(), // MongoDB ObjectId
+  description: Joi.string().allow("").optional(),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   changePasswordSchema,
+  productSchema,
 };
