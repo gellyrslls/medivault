@@ -1,20 +1,24 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const productController = require("../controllers/product.controller");
-const { authenticateToken } = require("../middleware/auth.middleware");
+const productController = require('../controllers/product.controller');
+const { auth, validate } = require('../middleware');
+const { productSchema } = require('../utils/validation-schemas');
 
 // Apply authentication middleware to all routes
-router.use(authenticateToken);
+router.use(auth);
 
 // Main CRUD routes
-router.post("/", productController.createProduct);
-router.get("/", productController.getProducts);
-router.get("/:id", productController.getProduct);
-router.put("/:id", productController.updateProduct);
-router.delete("/:id", productController.deleteProduct);
+router.post('/', validate(productSchema), productController.createProduct);
+router.get('/', productController.getProducts);
+router.get('/:id', productController.getProduct);
+router.put('/:id', validate(productSchema), productController.updateProduct);
+router.delete('/:id', productController.deleteProduct);
 
-// Additional routes for inventory management
-router.get("/reports/low-stock", productController.getLowStock);
-router.get("/reports/expiring", productController.getExpiringProducts);
+// Additional inventory management routes
+router.get('/reports/low-stock', productController.getLowStock);
+router.get('/reports/expiring', productController.getExpiringProducts);
+router.patch('/:id/stock', validate(Joi.object({
+  quantity: Joi.number().required()
+})), productController.updateStock);
 
 module.exports = router;

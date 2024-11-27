@@ -1,10 +1,8 @@
 const Product = require("../models/product.model");
-const { validateProduct } = require("../utils/validation-schemas");
 
 exports.createProduct = async (req, res, next) => {
   try {
-    const validatedData = validateProduct(req.body);
-    const product = new Product(validatedData);
+    const product = new Product(req.body);
     await product.save();
     res.status(201).json(product);
   } catch (error) {
@@ -31,14 +29,16 @@ exports.getProducts = async (req, res, next) => {
     const products = await Product.find(query)
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .populate("supplierId", "name"); // Add supplier name to response
 
     const total = await Product.countDocuments(query);
 
     res.json({
       products,
       totalPages: Math.ceil(total / limit),
-      currentPage: page,
+      currentPage: parseInt(page),
+      totalProducts: total,
     });
   } catch (error) {
     next(error);
@@ -47,7 +47,11 @@ exports.getProducts = async (req, res, next) => {
 
 exports.getProduct = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate(
+      "supplierId",
+      "name contactPerson email phone"
+    );
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -59,12 +63,11 @@ exports.getProduct = async (req, res, next) => {
 
 exports.updateProduct = async (req, res, next) => {
   try {
-    const validatedData = validateProduct(req.body);
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      validatedData,
-      { new: true, runValidators: true }
-    );
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    }).populate("supplierId", "name");
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -90,7 +93,7 @@ exports.getLowStock = async (req, res, next) => {
   try {
     const products = await Product.find({
       $expr: { $lte: ["$quantity", "$minStockLevel"] },
-    });
+    }).populate("supplierId", "name");
     res.json(products);
   } catch (error) {
     next(error);
@@ -107,8 +110,33 @@ exports.getExpiringProducts = async (req, res, next) => {
         $gte: new Date(),
         $lte: thirtyDaysFromNow,
       },
-    });
+    }).populate("supplierId", "name");
+
     res.json(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateStock = async (req, res, next) => {
+  try {
+    const { quantity } = req.body;
+
+    if (typeof quantity !== "number") {
+      return res.status(400).json({ message: "Quantity must be a number" });
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { quantity: quantity } },
+      { new: true, runValidators: true }
+    ).populate("supplierId", "name");
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json(product);
   } catch (error) {
     next(error);
   }
