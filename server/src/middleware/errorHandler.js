@@ -1,41 +1,42 @@
-const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
+import mongoose from "mongoose";
+import { AuthError } from "./auth.middleware.js";
 
-  // Mongoose validation error
-  if (err.name === "ValidationError") {
-    return res.status(400).json({
-      error: "Validation Error",
-      details: Object.values(err.errors).map((error) => ({
-        field: error.path,
-        message: error.message,
-      })),
+export const errorHandler = (err, req, res, next) => {
+  console.error(err);
+
+  // Handle authentication errors
+  if (err instanceof AuthError) {
+    return res.status(err.statusCode).json({
+      error: err.message,
     });
   }
 
-  // Mongoose duplicate key error
+  // Handle validation errors
+  if (err instanceof mongoose.Error.ValidationError) {
+    const errors = Object.values(err.errors).map((error) => ({
+      field: error.path,
+      message: error.message,
+    }));
+    return res.status(400).json({ errors });
+  }
+
+  // Handle duplicate key errors
   if (err.code === 11000) {
+    const field = Object.keys(err.keyValue)[0];
     return res.status(400).json({
-      error: "Duplicate Error",
-      message: "A record with that unique field already exists",
+      error: `${field} already exists`,
     });
   }
 
-  // JWT authentication error
-  if (err.name === "JsonWebTokenError") {
-    return res.status(401).json({
-      error: "Authentication Error",
-      message: "Invalid token",
+  // Handle cast errors (invalid ObjectId)
+  if (err instanceof mongoose.Error.CastError) {
+    return res.status(400).json({
+      error: `Invalid ${err.path}: ${err.value}`,
     });
   }
 
   // Default error
   res.status(500).json({
-    error: "Server Error",
-    message:
-      process.env.NODE_ENV === "development"
-        ? err.message
-        : "An unexpected error occurred",
+    error: "Internal Server Error",
   });
 };
-
-module.exports = { errorHandler };
