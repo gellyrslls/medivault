@@ -1,13 +1,12 @@
 import express from "express";
 import { supplierController } from "../controllers/supplier.controller.js";
-import { authenticate } from "../middleware/auth.middleware.js";
-import { validateRequest } from "../middleware/validation.middleware.js";
+import { auth, validateRequest } from "../middleware/index.js";
 import { supplierSchema } from "../models/supplier.model.js";
 
 const router = express.Router();
 
 // Apply authentication middleware to all supplier routes
-router.use(authenticate);
+router.use(auth);
 
 // Create supplier
 router.post("/", validateRequest(supplierSchema), supplierController.create);
