@@ -1,14 +1,12 @@
-import { supplierSchema } from "../models/supplier.model.js";
+import { ApiError } from "../utils/ApiError.js";
 import Supplier from "../models/supplier.model.js";
 import Product from "../models/product.model.js";
-import { ApiError } from "../utils/ApiError.js";
 
 export const supplierController = {
   // Create new supplier
   async create(req, res, next) {
     try {
-      const validatedData = supplierSchema.parse(req.body);
-      const supplier = await Supplier.create(validatedData);
+      const supplier = await Supplier.create(req.body);
       res.status(201).json(supplier);
     } catch (error) {
       next(error);
@@ -71,10 +69,9 @@ export const supplierController = {
   // Update supplier
   async update(req, res, next) {
     try {
-      const validatedData = supplierSchema.parse(req.body);
       const supplier = await Supplier.findByIdAndUpdate(
         req.params.id,
-        validatedData,
+        req.body,
         { new: true, runValidators: true }
       );
 
@@ -91,7 +88,6 @@ export const supplierController = {
   // Delete supplier
   async delete(req, res, next) {
     try {
-      // Check if supplier has associated products
       const productsCount = await Product.countDocuments({
         supplierId: req.params.id,
       });
