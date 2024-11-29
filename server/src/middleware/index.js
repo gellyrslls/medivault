@@ -1,11 +1,5 @@
-const { auth, authorize, AuthError } = require("./auth.middleware");
-const { validate } = require("./validate.middleware");
-const { errorHandler } = require("./errorHandler");
+import { auth, authorize, AuthError } from "./auth.middleware.js";
+import { validate } from "./validate.middleware.js";
+import { errorHandler } from "./errorHandler.js";
 
-module.exports = {
-  auth,
-  authorize,
-  validate,
-  errorHandler,
-  AuthError,
-};
+export { auth, authorize, validate, errorHandler, AuthError };

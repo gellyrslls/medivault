@@ -1,6 +1,6 @@
-const Joi = require("joi");
+import Joi from "joi";
 
-const registerSchema = Joi.object({
+export const registerSchema = Joi.object({
   email: Joi.string().email().required().messages({
     "string.email": "Please enter a valid email address",
     "any.required": "Email is required",
@@ -11,7 +11,7 @@ const registerSchema = Joi.object({
   }),
 });
 
-const loginSchema = Joi.object({
+export const loginSchema = Joi.object({
   email: Joi.string().email().required().messages({
     "string.email": "Please enter a valid email address",
     "any.required": "Email is required",
@@ -21,7 +21,7 @@ const loginSchema = Joi.object({
   }),
 });
 
-const changePasswordSchema = Joi.object({
+export const changePasswordSchema = Joi.object({
   currentPassword: Joi.string().required().messages({
     "any.required": "Current password is required",
   }),
@@ -31,7 +31,7 @@ const changePasswordSchema = Joi.object({
   }),
 });
 
-const productSchema = Joi.object({
+export const productSchema = Joi.object({
   name: Joi.string().required().trim(),
   sku: Joi.string().required().trim(),
   category: Joi.string().valid("OTC", "Prescription").required(),
@@ -43,17 +43,9 @@ const productSchema = Joi.object({
   description: Joi.string().allow("").optional(),
 });
 
-const stockUpdateSchema = Joi.object({
+export const stockUpdateSchema = Joi.object({
   quantity: Joi.number().required().messages({
-    'number.base': 'Quantity must be a number',
-    'any.required': 'Quantity is required'
-  })
+    "number.base": "Quantity must be a number",
+    "any.required": "Quantity is required",
+  }),
 });
-
-module.exports = {
-  registerSchema,
-  loginSchema,
-  changePasswordSchema,
-  productSchema,
-  stockUpdateSchema
-};

@@ -1,9 +1,5 @@
-const User = require('./user.model');
-const Product = require('./product.model');
-const Supplier = require('./supplier.model');
+import User from "./user.model.js";
+import Product from "./product.model.js";
+import Supplier from "./supplier.model.js";
 
-module.exports = {
-  User,
-  Product,
-  Supplier
-};
+export { User, Product, Supplier };
