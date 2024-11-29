@@ -43,9 +43,17 @@ const productSchema = Joi.object({
   description: Joi.string().allow("").optional(),
 });
 
+const stockUpdateSchema = Joi.object({
+  quantity: Joi.number().required().messages({
+    'number.base': 'Quantity must be a number',
+    'any.required': 'Quantity is required'
+  })
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   changePasswordSchema,
   productSchema,
+  stockUpdateSchema
 };

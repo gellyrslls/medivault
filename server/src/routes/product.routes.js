@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/product.controller');
 const { auth, validate } = require('../middleware');
-const { productSchema } = require('../utils/validation-schemas');
+const { productSchema, stockUpdateSchema } = require('../utils/validation-schemas');
 
 // Apply authentication middleware to all routes
 router.use(auth);
@@ -17,8 +17,6 @@ router.delete('/:id', productController.deleteProduct);
 // Additional inventory management routes
 router.get('/reports/low-stock', productController.getLowStock);
 router.get('/reports/expiring', productController.getExpiringProducts);
-router.patch('/:id/stock', validate(Joi.object({
-  quantity: Joi.number().required()
-})), productController.updateStock);
+router.patch('/:id/stock', validate(stockUpdateSchema), productController.updateStock);
 
 module.exports = router;
