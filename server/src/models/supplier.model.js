@@ -1,6 +1,34 @@
 import mongoose from "mongoose";
+import Joi from "joi";
 
-const supplierSchema = new mongoose.Schema(
+// Validation Schema using Joi
+export const supplierSchema = Joi.object({
+  name: Joi.string().required().min(2).max(100).messages({
+    "string.min": "Name must be at least 2 characters",
+    "string.max": "Name cannot exceed 100 characters",
+    "any.required": "Name is required",
+  }),
+  contactPerson: Joi.string().required().min(2).messages({
+    "string.min": "Contact person name must be at least 2 characters",
+    "any.required": "Contact person is required",
+  }),
+  email: Joi.string().email().required().messages({
+    "string.email": "Please enter a valid email address",
+    "any.required": "Email is required",
+  }),
+  phone: Joi.string()
+    .required()
+    .pattern(/^\+?[\d\s-]{10,}$/)
+    .messages({
+      "string.pattern.base": "Invalid phone number format",
+      "any.required": "Phone number is required",
+    }),
+  address: Joi.string().allow("").optional(),
+  notes: Joi.string().allow("").optional(),
+});
+
+// Mongoose Schema
+const supplierMongooseSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -25,7 +53,6 @@ const supplierSchema = new mongoose.Schema(
       trim: true,
       validate: {
         validator: function (v) {
-          // Basic phone validation - can be adjusted based on your needs
           return /\d{10,}/.test(v.replace(/[^\d]/g, ""));
         },
         message: (props) => `${props.value} is not a valid phone number!`,
@@ -48,15 +75,15 @@ const supplierSchema = new mongoose.Schema(
 );
 
 // Virtual for products from this supplier
-supplierSchema.virtual("products", {
+supplierMongooseSchema.virtual("products", {
   ref: "Product",
   localField: "_id",
   foreignField: "supplierId",
 });
 
 // Index for quick searches
-supplierSchema.index({ name: "text", email: "text" });
+supplierMongooseSchema.index({ name: "text", email: "text" });
 
-const Supplier = mongoose.model("Supplier", supplierSchema);
+const Supplier = mongoose.model("Supplier", supplierMongooseSchema);
 
 export default Supplier;
