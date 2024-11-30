@@ -8,7 +8,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import supplierRoutes from "./routes/supplier.routes.js";
-import reportRoutes from "./routes/report.routes.js";
+import reportRoutes from "./routes/reports.routes.js";
 
 const app = express();
 
