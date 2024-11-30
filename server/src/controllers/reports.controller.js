@@ -1,5 +1,5 @@
-import { Product } from "../models/product.model.js";
-import ApiError from "../utils/ApiError.js";
+import Product from "../models/product.model.js";
+import { ApiError } from "../utils/ApiError.js";
 
 export const getReports = {
   // Get products with stock below minimum level
