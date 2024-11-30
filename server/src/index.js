@@ -8,8 +8,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import supplierRoutes from "./routes/supplier.routes.js";
-// TODO: Implement reports module
-// import reportRoutes from './routes/report.routes.js';
+import reportRoutes from "./routes/report.routes.js";
 
 const app = express();
 
@@ -33,9 +32,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/suppliers", supplierRoutes);
-
-//TODO:
-//app.use("/api/reports", reportRoutes);
+app.use("/api/reports", reportRoutes);
 
 // Error handling
 app.use(errorHandler);
