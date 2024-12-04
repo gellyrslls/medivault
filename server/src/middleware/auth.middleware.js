@@ -1,60 +1,41 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/index.js";
+import { ApiError } from "../utils/ApiError.js";
+import prisma from "../utils/prisma.js";
 
-export class AuthError extends Error {
-  constructor(message, statusCode = 401) {
-    super(message);
-    this.statusCode = statusCode;
-    this.name = "AuthError";
-  }
-}
-
-export const auth = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   try {
     // Get token from header
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
-      throw new AuthError("No token provided");
+      throw new ApiError(401, "Not authorized to access this route");
     }
 
     const token = authHeader.split(" ")[1];
 
     // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (error) {
-      if (error.name === "TokenExpiredError") {
-        throw new AuthError("Token expired");
-      }
-      throw new AuthError("Invalid token");
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find user
-    const user = await User.findById(decoded.userId).select("-password");
+    // Check if user still exists
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+
     if (!user) {
-      throw new AuthError("User not found");
+      throw new ApiError(401, "User no longer exists");
     }
 
-    // Attach user to request object
-    req.user = user;
+    // Attach user to request
+    req.user = decoded;
     next();
   } catch (error) {
-    next(error);
+    if (error instanceof jwt.JsonWebTokenError) {
+      next(new ApiError(401, "Invalid token"));
+    } else {
+      next(error);
+    }
   }
-};
-
-// Optional: Role-based authorization middleware
-export const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      throw new AuthError("Authentication required");
-    }
-
-    if (!roles.includes(req.user.role)) {
-      throw new AuthError("Not authorized to access this route", 403);
-    }
-
-    next();
-  };
 };

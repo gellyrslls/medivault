@@ -1,145 +1,159 @@
-import Product from "../models/product.model.js";
+import prisma from "../utils/prisma.js";
+import { ApiError } from "../utils/ApiError.js";
 
-export const productController = {
-  async createProduct(req, res, next) {
-    try {
-      const product = new Product(req.body);
-      await product.save();
-      res.status(201).json(product);
-    } catch (error) {
+export const createProduct = async (req, res, next) => {
+  try {
+    const product = await prisma.product.create({
+      data: {
+        name: req.body.name,
+        sku: req.body.sku,
+        category: req.body.category,
+        quantity: parseInt(req.body.quantity),
+        minStockLevel: parseInt(req.body.minStockLevel),
+        price: parseFloat(req.body.price),
+        expiryDate: new Date(req.body.expiryDate),
+        description: req.body.description,
+        supplierId: parseInt(req.body.supplierId),
+      },
+      include: {
+        supplier: true,
+      },
+    });
+
+    res.status(201).json(product);
+  } catch (error) {
+    if (error.code === "P2002") {
+      next(new ApiError(400, "SKU must be unique"));
+    } else {
       next(error);
     }
-  },
+  }
+};
 
-  async getProducts(req, res, next) {
-    try {
-      const { page = 1, limit = 10, search, category } = req.query;
-      const query = {};
+export const getProducts = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, search, category } = req.query;
+    const skip = (page - 1) * Number(limit);
 
-      if (search) {
-        query.$or = [
-          { name: { $regex: search, $options: "i" } },
-          { sku: { $regex: search, $options: "i" } },
-        ];
-      }
-
-      if (category) {
-        query.category = category;
-      }
-
-      const products = await Product.find(query)
-        .limit(limit * 1)
-        .skip((page - 1) * limit)
-        .sort({ createdAt: -1 })
-        .populate("supplierId", "name");
-
-      const total = await Product.countDocuments(query);
-
-      res.json({
-        products,
-        totalPages: Math.ceil(total / limit),
-        currentPage: parseInt(page),
-        totalProducts: total,
-      });
-    } catch (error) {
-      next(error);
+    // Build where clause
+    const where = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { sku: { contains: search, mode: "insensitive" } },
+      ];
     }
-  },
-
-  async getProduct(req, res, next) {
-    try {
-      const product = await Product.findById(req.params.id).populate(
-        "supplierId",
-        "name contactPerson email phone"
-      );
-
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-      res.json(product);
-    } catch (error) {
-      next(error);
+    if (category) {
+      where.category = category;
     }
-  },
 
-  async updateProduct(req, res, next) {
-    try {
-      const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true,
-      }).populate("supplierId", "name");
-
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-      res.json(product);
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async deleteProduct(req, res, next) {
-    try {
-      const product = await Product.findByIdAndDelete(req.params.id);
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-      res.json({ message: "Product deleted successfully" });
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async getLowStock(req, res, next) {
-    try {
-      const products = await Product.find({
-        $expr: { $lte: ["$quantity", "$minStockLevel"] },
-      }).populate("supplierId", "name");
-      res.json(products);
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async getExpiringProducts(req, res, next) {
-    try {
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-
-      const products = await Product.find({
-        expiryDate: {
-          $gte: new Date(),
-          $lte: thirtyDaysFromNow,
+    // Get products with pagination
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+        include: {
+          supplier: true,
         },
-      }).populate("supplierId", "name");
+      }),
+      prisma.product.count({ where }),
+    ]);
 
-      res.json(products);
-    } catch (error) {
+    res.json({
+      products,
+      totalPages: Math.ceil(total / Number(limit)),
+      currentPage: Number(page),
+      total,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProduct = async (req, res, next) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: parseInt(req.params.id) },
+      include: {
+        supplier: true,
+      },
+    });
+
+    if (!product) {
+      throw new ApiError(404, "Product not found");
+    }
+
+    res.json(product);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateProduct = async (req, res, next) => {
+  try {
+    const product = await prisma.product.update({
+      where: { id: parseInt(req.params.id) },
+      data: {
+        name: req.body.name,
+        sku: req.body.sku,
+        category: req.body.category,
+        quantity: parseInt(req.body.quantity),
+        minStockLevel: parseInt(req.body.minStockLevel),
+        price: parseFloat(req.body.price),
+        expiryDate: new Date(req.body.expiryDate),
+        description: req.body.description,
+        supplierId: parseInt(req.body.supplierId),
+      },
+      include: {
+        supplier: true,
+      },
+    });
+
+    res.json(product);
+  } catch (error) {
+    if (error.code === "P2025") {
+      next(new ApiError(404, "Product not found"));
+    } else if (error.code === "P2002") {
+      next(new ApiError(400, "SKU must be unique"));
+    } else {
       next(error);
     }
-  },
+  }
+};
 
-  async updateStock(req, res, next) {
-    try {
-      const { quantity } = req.body;
+export const deleteProduct = async (req, res, next) => {
+  try {
+    await prisma.product.delete({
+      where: { id: parseInt(req.params.id) },
+    });
 
-      if (typeof quantity !== "number") {
-        return res.status(400).json({ message: "Quantity must be a number" });
-      }
-
-      const product = await Product.findByIdAndUpdate(
-        req.params.id,
-        { $inc: { quantity: quantity } },
-        { new: true, runValidators: true }
-      ).populate("supplierId", "name");
-
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-
-      res.json(product);
-    } catch (error) {
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === "P2025") {
+      next(new ApiError(404, "Product not found"));
+    } else {
       next(error);
     }
-  },
+  }
+};
+
+export const getLowStockProducts = async (req, res, next) => {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        quantity: {
+          lte: prisma.product.fields.minStockLevel,
+        },
+      },
+      include: {
+        supplier: true,
+      },
+    });
+
+    res.json(products);
+  } catch (error) {
+    next(error);
+  }
 };

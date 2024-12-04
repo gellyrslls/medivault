@@ -1,112 +1,123 @@
+import prisma from "../utils/prisma.js";
 import { ApiError } from "../utils/ApiError.js";
-import Supplier from "../models/supplier.model.js";
-import Product from "../models/product.model.js";
 
-export const supplierController = {
-  // Create new supplier
-  async create(req, res, next) {
-    try {
-      const supplier = await Supplier.create(req.body);
-      res.status(201).json(supplier);
-    } catch (error) {
-      next(error);
+export const createSupplier = async (req, res, next) => {
+  try {
+    const supplier = await prisma.supplier.create({
+      data: {
+        name: req.body.name,
+        contactPerson: req.body.contactPerson,
+        email: req.body.email,
+        phone: req.body.phone,
+      },
+    });
+
+    res.status(201).json(supplier);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSuppliers = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, search } = req.query;
+    const skip = (page - 1) * Number(limit);
+
+    // Build where clause
+    const where = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { contactPerson: { contains: search, mode: "insensitive" } },
+      ];
     }
-  },
 
-  // Get all suppliers with pagination and search
-  async getAll(req, res, next) {
-    try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const search = req.query.search;
-
-      const query = {};
-      if (search) {
-        query.$or = [
-          { name: { $regex: search, $options: "i" } },
-          { email: { $regex: search, $options: "i" } },
-        ];
-      }
-
-      const [suppliers, total] = await Promise.all([
-        Supplier.find(query)
-          .skip((page - 1) * limit)
-          .limit(limit)
-          .sort({ createdAt: -1 }),
-        Supplier.countDocuments(query),
-      ]);
-
-      res.json({
-        suppliers,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
+    // Get suppliers with pagination
+    const [suppliers, total] = await Promise.all([
+      prisma.supplier.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+        include: {
+          products: true,
         },
-      });
-    } catch (error) {
+      }),
+      prisma.supplier.count({ where }),
+    ]);
+
+    res.json({
+      suppliers,
+      totalPages: Math.ceil(total / Number(limit)),
+      currentPage: Number(page),
+      total,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSupplier = async (req, res, next) => {
+  try {
+    const supplier = await prisma.supplier.findUnique({
+      where: { id: parseInt(req.params.id) },
+      include: {
+        products: true,
+      },
+    });
+
+    if (!supplier) {
+      throw new ApiError(404, "Supplier not found");
+    }
+
+    res.json(supplier);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateSupplier = async (req, res, next) => {
+  try {
+    const supplier = await prisma.supplier.update({
+      where: { id: parseInt(req.params.id) },
+      data: {
+        name: req.body.name,
+        contactPerson: req.body.contactPerson,
+        email: req.body.email,
+        phone: req.body.phone,
+      },
+      include: {
+        products: true,
+      },
+    });
+
+    res.json(supplier);
+  } catch (error) {
+    if (error.code === "P2025") {
+      next(new ApiError(404, "Supplier not found"));
+    } else {
       next(error);
     }
-  },
+  }
+};
 
-  // Get supplier by ID with their products
-  async getById(req, res, next) {
-    try {
-      const supplier = await Supplier.findById(req.params.id);
-      if (!supplier) {
-        throw new ApiError(404, "Supplier not found");
-      }
+export const deleteSupplier = async (req, res, next) => {
+  try {
+    await prisma.supplier.delete({
+      where: { id: parseInt(req.params.id) },
+    });
 
-      const products = await Product.find({ supplierId: supplier._id });
-
-      res.json({ supplier, products });
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  // Update supplier
-  async update(req, res, next) {
-    try {
-      const supplier = await Supplier.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true, runValidators: true }
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === "P2025") {
+      next(new ApiError(404, "Supplier not found"));
+    } else if (error.code === "P2003") {
+      next(
+        new ApiError(400, "Cannot delete supplier with associated products")
       );
-
-      if (!supplier) {
-        throw new ApiError(404, "Supplier not found");
-      }
-
-      res.json(supplier);
-    } catch (error) {
+    } else {
       next(error);
     }
-  },
-
-  // Delete supplier
-  async delete(req, res, next) {
-    try {
-      const productsCount = await Product.countDocuments({
-        supplierId: req.params.id,
-      });
-
-      if (productsCount > 0) {
-        throw new ApiError(
-          400,
-          "Cannot delete supplier with associated products. Please reassign or delete products first."
-        );
-      }
-
-      const supplier = await Supplier.findByIdAndDelete(req.params.id);
-      if (!supplier) {
-        throw new ApiError(404, "Supplier not found");
-      }
-
-      res.json({ message: "Supplier deleted successfully" });
-    } catch (error) {
-      next(error);
-    }
-  },
+  }
 };
