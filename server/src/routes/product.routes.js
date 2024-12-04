@@ -1,38 +1,24 @@
 import express from "express";
-import { productController } from "../controllers/product.controller.js";
-import { auth, validateRequest } from "../middleware/index.js";
 import {
-  productSchema,
-  stockUpdateSchema,
-} from "../utils/validation-schemas.js";
+  createProduct,
+  getProducts,
+  getProduct,
+  updateProduct,
+  deleteProduct,
+  getLowStockProducts,
+} from "../controllers/product.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// Apply authentication middleware to all routes
-router.use(auth);
+router.route("/").post(protect, createProduct).get(protect, getProducts);
 
-// Main CRUD routes
-router.post(
-  "/",
-  validateRequest(productSchema),
-  productController.createProduct
-);
-router.get("/", productController.getProducts);
-router.get("/:id", productController.getProduct);
-router.put(
-  "/:id",
-  validateRequest(productSchema),
-  productController.updateProduct
-);
-router.delete("/:id", productController.deleteProduct);
+router.get("/low-stock", protect, getLowStockProducts);
 
-// Additional inventory management routes
-router.get("/reports/low-stock", productController.getLowStock);
-router.get("/reports/expiring", productController.getExpiringProducts);
-router.patch(
-  "/:id/stock",
-  validateRequest(stockUpdateSchema),
-  productController.updateStock
-);
+router
+  .route("/:id")
+  .get(protect, getProduct)
+  .put(protect, updateProduct)
+  .delete(protect, deleteProduct);
 
 export default router;
