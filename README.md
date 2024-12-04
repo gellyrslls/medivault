@@ -176,12 +176,129 @@ main
 
 ## Testing
 
-### Backend API Testing Status
+### API Testing with Thunder Client
 
-- Authentication endpoints (⏳ Pending)
-- Product endpoints (⏳ Pending)
-- Supplier endpoints (⏳ Pending)
-- Reports endpoints (⏳ Pending)
+#### Setup
+
+1. Install Thunder Client extension in VSCode
+2. Create a new Collection named "Pharmacy Inventory API"
+3. Set up environment variables:
+   - Create new environment
+   - Add variable: `baseUrl`: `http://localhost:5000`
+   - Add variable: `token`: `<empty>` (Will be filled after login)
+
+#### Authentication Testing
+
+```json
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "test123"
+}
+
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "test123"
+}
+```
+
+After successful login, set the token in your environment:
+- Copy the JWT token from the response
+- Update the `token` environment variable
+- Add the following header to all protected requests:
+  ```
+  Authorization: Bearer {{token}}
+  ```
+
+#### Product Testing
+
+```json
+GET {{baseUrl}}/api/products
+Authorization: Bearer {{token}}
+
+POST {{baseUrl}}/api/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Paracetamol",
+    "sku": "PARA001",
+    "category": "OTC",
+    "quantity": 100,
+    "minStockLevel": 20,
+    "price": 9.99,
+    "expiryDate": "2024-12-31",
+    "description": "Pain reliever",
+    "supplierId": 1
+}
+
+PUT {{baseUrl}}/api/products/:id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "quantity": 150,
+    "price": 10.99
+}
+
+DELETE {{baseUrl}}/api/products/:id
+Authorization: Bearer {{token}}
+```
+
+#### Supplier Testing
+
+```json
+GET {{baseUrl}}/api/suppliers
+Authorization: Bearer {{token}}
+
+POST {{baseUrl}}/api/suppliers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "PharmaCare Ltd",
+    "contactPerson": "John Doe",
+    "email": "john@pharmacare.com",
+    "phone": "1234567890"
+}
+
+PUT {{baseUrl}}/api/suppliers/:id
+DELETE {{baseUrl}}/api/suppliers/:id
+```
+
+#### Reports Testing
+
+```json
+GET {{baseUrl}}/api/reports/low-stock
+GET {{baseUrl}}/api/reports/inventory-status
+GET {{baseUrl}}/api/reports/expiring-soon
+Authorization: Bearer {{token}}
+```
+
+### Testing Status
+
+- Authentication endpoints (✅ Ready for testing)
+- Product endpoints (✅ Ready for testing)
+- Supplier endpoints (✅ Ready for testing)
+- Reports endpoints (✅ Ready for testing)
+
+### Testing Best Practices
+
+1. Test in sequence (auth → products → suppliers → reports)
+2. Save successful requests as examples
+3. Test both success and error cases:
+   - Invalid data
+   - Missing fields
+   - Authentication errors
+   - Authorization errors
+4. Verify response status codes and formats
+5. Create separate folders for each endpoint group
+6. Document any issues found in GitHub Issues
 
 <!-- MARKDOWN LINKS & IMAGES -->
 
