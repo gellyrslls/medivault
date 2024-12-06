@@ -1,3 +1,5 @@
+import type { Product } from "./product.types";
+
 export interface Supplier {
   id: number;
   name: string;
