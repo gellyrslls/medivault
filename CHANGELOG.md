@@ -7,8 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Frontend component structure reorganization:
+  - Moved auth forms to dedicated forms directory
+  - Implemented proper separation of pages and components
+  - Updated import paths with explicit file extensions
+  - Better organization of auth-related components
+
+### Technical Debt / Pending
+
+- Enhanced UI styling for auth forms
+- Backend API integration
+- Proper error handling
+- Loading states implementation
+- Mobile responsiveness improvements
+
+## [0.2.0] - 2024-12-07
+
 ### Added
+
+#### Frontend
+
+- Authentication UI implementation
+  - Login form with validation using Zod
+  - Registration form with validation
+  - Protected route component for secure routing
+  - Authentication context and state management
+- Layout Structure
+  - Main layout wrapper component
+  - Header component with user menu
+  - Sidebar navigation with responsiveness
+- Core UI Components Integration
+  - shadcn/ui form components setup
+  - Toast notification system
+  - Card components
+  - Sheet component for mobile navigation
+- Feature-based folder organization
+  - Components directory with auth and layout sections
+  - Context setup with proper TypeScript types
+  - Route configuration with lazy loading
+
+### Changed
+
+- Frontend project structure reorganization:
+  - Implemented feature-based directory structure
+  - Updated TypeScript configuration for path aliases
+  - Modified App component to use provider pattern
+- Frontend build configuration updates
+
+### Fixed
+
+- Frontend TypeScript path resolution
+- Component import/export structures
+
+## [0.1.0] - 2024-12-04
+
+### Added
+
 #### Backend
+
 - Complete Express server setup with middleware configuration
 - PostgreSQL database integration with Prisma ORM
 - Comprehensive authentication system with JWT
@@ -37,38 +95,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Category enumeration
 
 #### Database Schema
+
 - Implemented complete Prisma schema with:
   - User model (id, email, password, timestamps)
   - Product model (name, SKU, category, quantity, price, expiry)
   - Supplier model (name, contact, email, phone)
   - Proper relationships and constraints
 
-### In Progress
-#### Frontend
-- Initial React + Vite setup
-- Project structure organization:
-  - Components directory setup
-  - Pages directory structure
-  - Utils and hooks preparation
-- Base configuration:
-  - Tailwind CSS setup
-  - TypeScript configuration
-  - shadcn/ui integration preparations
-
 ### Changed
+
 - Migrated database layer from Mongoose to Prisma
 - Updated authentication middleware naming from 'auth' to 'protect'
 - Package dependencies resolution and updates
 - Documentation improvements in README
 
 ### Fixed
+
 - Authentication middleware import naming issues
 - Package dependency conflicts
 - Server configuration issues
 
-## [0.1.0] - 2024-12-04
-
 ### Added
+
 - Initial project scaffolding
 - Basic directory structure:
   ```
@@ -91,6 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic README documentation
 
 ### Security
+
 - JWT token configuration
 - Password hashing setup
 - Protected routes middleware structure
@@ -98,6 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Project Specifications
 
 ### Tech Stack
+
 - Frontend:
   - React 18 with Vite
   - TypeScript
@@ -115,16 +165,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - bcrypt password hashing
 
 ### Core Features Implementation Status
+
 - ✅ Backend API Structure
 - ✅ Database Models
 - ✅ Authentication System
 - ✅ Product Management
 - ✅ Supplier Management
 - ✅ Reports Module
-- 🚧 Frontend Setup
-- ⭕ Frontend Authentication
+- ✅ Frontend Setup
+- 🚧 Frontend Authentication
 - ⭕ Frontend Layout
 - ⭕ Frontend Features
 
-[unreleased]: https://github.com/yourusername/pharmacy-inventory/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/yourusername/pharmacy-inventory/releases/tag/v0.1.0
+[unreleased]: https://github.com/gellyrslls/pharmacy-inventory/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/gellyrslls/pharmacy-inventory/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/gellyrslls/pharmacy-inventory/releases/tag/v0.1.0
