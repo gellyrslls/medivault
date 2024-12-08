@@ -7,16 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Added
+- Enhanced authentication UI with shadcn/ui components
+- Form validation using react-hook-form and zod
+- Global CSS theme setup for shadcn/ui
+- TooltipProvider and required providers
 
+### Changed
 - Frontend component structure reorganization:
   - Moved auth forms to dedicated forms directory
   - Implemented proper separation of pages and components
   - Updated import paths with explicit file extensions
   - Better organization of auth-related components
+  - Consolidated auth forms into single AuthForm component
+  - Removed redundant LoginForm and RegisterForm components
 
 ### Technical Debt / Pending
-
 - Enhanced UI styling for auth forms
 - Backend API integration
 - Proper error handling
