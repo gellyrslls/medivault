@@ -97,7 +97,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full bg-neutral-900 text-white">
               {mode === 'login' ? 'Sign in' : 'Create account'}
             </Button>
           </form>

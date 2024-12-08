@@ -1,9 +1,19 @@
-import { RegisterForm } from "@/components/forms/auth/RegisterForm.tsx";
+import React from "react";
+import AuthForm from "@/components/auth/AuthForm";
+import { useAuth } from "@/hooks/useAuth";
 
-export default function RegisterPage() {
+const RegisterPage: React.FC = () => {
+  const { register } = useAuth();
+
+  const handleSubmit = async (values: { email: string; password: string }) => {
+    await register(values.email, values.password);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <RegisterForm />
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <AuthForm mode="register" onSubmit={handleSubmit} />
     </div>
   );
-}
+};
+
+export default RegisterPage;

@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
-import { LoginForm } from "@/components/forms/auth/LoginForm";
-import { RegisterForm } from "@/components/forms/auth/RegisterForm";
+import LoginPage from "@/pages/auth/LoginPage";
+import RegisterPage from "@/pages/auth/RegisterPage";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Using dynamic imports with type annotations for proper lazy loading
@@ -34,8 +34,8 @@ export function AppRoutes() {
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
         {/* Public routes */}
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
