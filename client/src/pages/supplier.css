@@ -1,0 +1,88 @@
+.supplier-container {
+    width: 80%;
+    margin: 0 auto;
+  }
+  
+  .supplier-form {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .supplier-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    color: white;
+  }
+  
+  .supplier-form button {
+    padding: 10px;
+    background-color: #004226;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .supplier-list {
+    margin-top: 20px;
+  }
+  
+  .supplier-item {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .supplier-item span {
+    display: inline-block;
+    margin-right: 10px;
+  }
+  
+  .supplier-item button {
+    background-color: #ff4d4d;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .supplier-item button:hover {
+    background-color: #ff1a1a;
+  }
+  
+  .delete-confirmation {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+  }
+  
+  .delete-confirmation button {
+    margin: 10px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .delete-confirmation button:first-child {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+  }
+  
+  .delete-confirmation button:last-child {
+    background-color: #ccc;
+    border: none;
+  }

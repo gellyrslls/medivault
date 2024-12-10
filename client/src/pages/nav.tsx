@@ -1,4 +1,5 @@
-import './nav.css';  
+import { Link } from 'react-router-dom';
+import './nav.css';
 
 function Nav() {
   return (
@@ -7,31 +8,30 @@ function Nav() {
         <nav className="nav">
           <ul className="nav-list">
             <li className="nav-item">
-              <a href="#">Home</a>
+              <span className="nav-link" style={{ color: 'white', fontWeight: 'bold' }} onClick={(e) => e.preventDefault()}>Home</span>
             </li>
             <li className="nav-item">
-              <a href="#">Products</a>
+              <Link to="/products">Products</Link>
             </li>
             <li className="nav-item">
-              <a href="#">Orders</a>
+              <Link to="#">Orders</Link>
             </li>
             <li className="nav-item">
-              <a href="#">Inventory</a>
+              <Link to="/supplier">Supplier</Link> 
             </li>
             <li className="nav-item">
-              <a href="#">Reports</a>
+              <Link to="#">Reports</Link>
             </li>
             <li className="nav-item">
-              <a href="#">Logout</a>
+              <Link to="/">Logout</Link>
             </li>
           </ul>
         </nav>
       </div>
 
-
       <div className="main-content">
         <div className="logo-container">
-        <img src="./logo.png" alt="Logo" className="logo" />
+          <img src="./logo.png" alt="Logo" className="logo" />
         </div>
       </div>
     </div>

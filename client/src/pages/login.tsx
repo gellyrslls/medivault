@@ -1,17 +1,23 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';  
 import './login.css';  
 
 function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState<string>(''); 
+  const [password, setPassword] = useState<string>(''); 
+  const navigate = useNavigate(); 
 
   const handleLogin = () => {
-    console.log('Logging in with:', username, password);
+    if (!username || !password) {
+      alert('Username and Password must not be empty!');
+    } else {
+      console.log('Logging in with:', username, password);
+      navigate('/nav');  
+    }
   };
 
   const handleRegister = () => {
-    // Registration logic here
-    console.log('Redirecting to registration...');
+    navigate('/register'); 
   };
 
   return (

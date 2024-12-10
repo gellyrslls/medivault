@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import './register.css';  
+import { useNavigate } from 'react-router-dom';  
+import './register.css';
 
 function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [retypePassword, setRetypePassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();  
 
   const handleRegister = () => {
     if (password !== retypePassword) {
@@ -13,7 +15,16 @@ function Register() {
     } else {
       setError('');
       console.log('Registering:', username, password);
-      // registration logic, add here
+      
+      
+      alert('Registration successful!');
+      
+      
+      const confirmRedirect = window.confirm('Registration successful! Do you want to go back to login?');
+      
+      if (confirmRedirect) {
+        navigate('/');  
+      }
     }
   };
 
