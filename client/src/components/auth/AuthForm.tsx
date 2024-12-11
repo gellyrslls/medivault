@@ -1,10 +1,11 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,7 +13,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -20,34 +21,52 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 interface AuthFormProps {
-  mode: 'login' | 'register';
-  onSubmit: (values: z.infer<typeof formSchema>) => Promise<void>;
+  mode: "login" | "register";
 }
 
-const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
+const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, register } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await onSubmit(values);
+      setIsLoading(true);
+      if (mode === "login") {
+        await login(values);
+        navigate("/dashboard");
+      } else {
+        await register(values);
+        navigate("/dashboard");
+      }
     } catch (error) {
-      console.error('Auth error:', error);
-      // You can handle error states here
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Authentication failed",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,15 +74,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl">
-          {mode === 'login' ? 'Sign in' : 'Create an account'}
+          {mode === "login" ? "Sign in" : "Create an account"}
         </CardTitle>
         <CardDescription>
-          Enter your email below to {mode === 'login' ? 'sign in to' : 'create'} your account
+          Enter your email below to {mode === "login" ? "sign in to" : "create"}{" "}
+          your account
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="email"
@@ -71,10 +94,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="m@example.com" 
+                    <Input
+                      placeholder="m@example.com"
                       type="email"
-                      {...field} 
+                      disabled={isLoading}
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -88,42 +112,44 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit }) => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="password"
-                      {...field} 
-                    />
+                    <Input type="password" disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full bg-neutral-900 text-white">
-              {mode === 'login' ? 'Sign in' : 'Create account'}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {mode === "login" ? "Sign in" : "Create account"}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter>
         <p className="text-sm text-muted-foreground">
-          {mode === 'login' ? (
+          {mode === "login" ? (
             <>
-              Don't have an account?{' '}
-              <Link 
-                to="/register" 
-                className="text-primary underline-offset-4 hover:underline"
+              Don't have an account?{" "}
+              <Button
+                variant="link"
+                className="px-0"
+                onClick={() => navigate("/register")}
+                disabled={isLoading}
               >
                 Sign up
-              </Link>
+              </Button>
             </>
           ) : (
             <>
-              Already have an account?{' '}
-              <Link 
-                to="/login" 
-                className="text-primary underline-offset-4 hover:underline"
+              Already have an account?{" "}
+              <Button
+                variant="link"
+                className="px-0"
+                onClick={() => navigate("/login")}
+                disabled={isLoading}
               >
                 Sign in
-              </Link>
+              </Button>
             </>
           )}
         </p>

@@ -1,17 +1,23 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "@/context/auth";
+import { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
-export const ProtectedRoute = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
-    return <div>Loading...</div>; // TODO: replace with proper loading component
+  if (loading) {
+    // You can add a loading spinner here
+    return null;
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return <Outlet />;
-};
+  return <>{children}</>;
+}

@@ -1,19 +1,9 @@
-import React from "react";
 import AuthForm from "@/components/auth/AuthForm";
-import { useAuth } from "@/hooks/useAuth";
 
-const LoginPage: React.FC = () => {
-  const { login } = useAuth();
-
-  const handleSubmit = async (values: { email: string; password: string }) => {
-    await login(values.email, values.password);
-  };
-
+export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <AuthForm mode="login" onSubmit={handleSubmit} />
+    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+      <AuthForm mode="login" />
     </div>
   );
-};
-
-export default LoginPage;
+}
