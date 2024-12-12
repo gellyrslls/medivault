@@ -1,8 +1,15 @@
 import { Package, AlertTriangle, CalendarClock, Users } from "lucide-react";
 import { StatsCard } from "./StatsCard";
+import { useState, useEffect } from "react";
 
 export function StatsCards() {
-  // Mock data - will be replaced with real data from API
+  const [loading, setLoading] = useState(true);
+  // Mock loading state - will be replaced with real API call
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const stats = [
     {
       title: "Total Products",
@@ -33,7 +40,7 @@ export function StatsCards() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
-        <StatsCard key={stat.title} {...stat} />
+        <StatsCard key={stat.title} {...stat} loading={loading} />
       ))}
     </div>
   );
