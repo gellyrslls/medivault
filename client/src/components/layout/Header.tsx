@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

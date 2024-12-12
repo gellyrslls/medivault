@@ -13,7 +13,7 @@ export const register = async (req, res, next) => {
     });
 
     if (existingUser) {
-      throw new ApiError(400, "Email already registered");
+      throw new ApiError(400, "Email already registered.");
     }
 
     // Hash password
@@ -56,13 +56,13 @@ export const login = async (req, res, next) => {
     });
 
     if (!user) {
-      throw new ApiError(401, "Invalid credentials");
+      throw new ApiError(401, "Invalid credentials.");
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new ApiError(401, "Invalid credentials");
+      throw new ApiError(401, "Invalid credentials.");
     }
 
     // Generate token
@@ -93,7 +93,7 @@ export const getProfile = async (req, res, next) => {
     });
 
     if (!user) {
-      throw new ApiError(404, "User not found");
+      throw new ApiError(404, "User not found.");
     }
 
     res.json(user);
@@ -118,7 +118,7 @@ export const changePassword = async (req, res, next) => {
       user.password
     );
     if (!isPasswordValid) {
-      throw new ApiError(401, "Current password is incorrect");
+      throw new ApiError(401, "Current password is incorrect.");
     }
 
     // Hash new password
@@ -130,7 +130,7 @@ export const changePassword = async (req, res, next) => {
       data: { password: hashedPassword },
     });
 
-    res.json({ message: "Password updated successfully" });
+    res.json({ message: "Password updated successfully." });
   } catch (error) {
     next(error);
   }

@@ -26,8 +26,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
 });
 
 interface AuthFormProps {
@@ -63,7 +63,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
         variant: "destructive",
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Authentication failed",
+          error instanceof Error ? error.message : "Authentication failed.",
       });
     } finally {
       setIsLoading(false);
@@ -78,7 +78,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
         </CardTitle>
         <CardDescription>
           Enter your email below to {mode === "login" ? "sign in to" : "create"}{" "}
-          your account
+          your account.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -118,7 +118,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-neutral-900 text-white" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === "login" ? "Sign in" : "Create account"}
             </Button>
