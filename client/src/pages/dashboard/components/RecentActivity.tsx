@@ -6,7 +6,7 @@ import {
   CalendarClock,
   ArrowUpDown,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useRecentActivity } from "@/hooks/useRecentActivity";
 
 interface Activity {
   id: string;
@@ -45,60 +45,43 @@ function ActivitySkeleton() {
 }
 
 export function RecentActivity() {
-  const [loading, setLoading] = useState(true);
-  // Mock loading state - will be replaced with real API call
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const activities: Activity[] = [
-    {
-      id: "1",
-      type: "stock_update",
-      description: "Updated stock for Paracetamol 500mg",
-      timestamp: new Date(),
-      status: "+50 units",
-    },
-    {
-      id: "2",
-      type: "low_stock",
-      description: "Low stock alert: Amoxicillin 250mg",
-      timestamp: new Date(Date.now() - 3600000),
-      status: "5 remaining",
-    },
-    {
-      id: "3",
-      type: "new_product",
-      description: "Added new product: Vitamin C 1000mg",
-      timestamp: new Date(Date.now() - 7200000),
-    },
-    {
-      id: "4",
-      type: "expired",
-      description: "Product expired: Cough Syrup 120ml",
-      timestamp: new Date(Date.now() - 86400000),
-    },
-  ];
+  const { data: activities, isLoading, error } = useRecentActivity();
 
   return (
     <Card className="col-span-3">
       <CardHeader>
         <CardTitle>
-          {loading ? <Skeleton className="h-6 w-32" /> : "Recent Activity"}
+          {isLoading ? <Skeleton className="h-6 w-32" /> : "Recent Activity"}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-8">
-          {loading ? (
+          {isLoading ? (
             <>
               <ActivitySkeleton />
               <ActivitySkeleton />
               <ActivitySkeleton />
               <ActivitySkeleton />
             </>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-6">
+              <AlertTriangle className="h-8 w-8 text-destructive" />
+              <p className="mt-2 text-sm text-destructive">
+                Failed to load recent activity
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Please try again later
+              </p>
+            </div>
+          ) : activities?.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-6">
+              <Package className="h-8 w-8 text-muted-foreground" />
+              <p className="mt-2 text-sm text-muted-foreground">
+                No recent activity
+              </p>
+            </div>
           ) : (
-            activities.map((activity) => (
+            activities?.map((activity) => (
               <div key={activity.id} className="flex items-center">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
