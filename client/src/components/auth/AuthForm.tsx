@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/auth/hooks";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import {
@@ -25,11 +25,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-const formSchema = z.object({
-  email: z.string().email("Please enter a valid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
-
 interface AuthFormProps {
   mode: "login" | "register";
 }
@@ -40,22 +35,51 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Define schemas for login and register
+  const loginSchema = z.object({
+    email: z.string().email("Please enter a valid email address."),
+    password: z.string().min(8, "Password must be at least 8 characters."),
+  });
+
+  const registerSchema = loginSchema
+    .extend({
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    });
+
+  // Use appropriate schema based on mode
+  const formSchema = mode === "register" ? registerSchema : loginSchema;
+  type FormValues = z.infer<typeof formSchema>;
+
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
+      ...(mode === "register" ? { confirmPassword: "" } : {}),
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: FormValues) => {
     try {
       setIsLoading(true);
       if (mode === "login") {
-        await login(values);
+        await login({
+          email: values.email,
+          password: values.password,
+        });
         navigate("/dashboard");
       } else {
-        await register(values);
+        // Type assertion since we know it's a register form
+        const registerValues = values as z.infer<typeof registerSchema>;
+        await register({
+          email: registerValues.email,
+          password: registerValues.password,
+          confirmPassword: registerValues.confirmPassword,
+        });
         navigate("/dashboard");
       }
     } catch (error) {
@@ -118,7 +142,26 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full bg-neutral-900 text-white" disabled={isLoading}>
+            {mode === "register" && (
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" disabled={isLoading} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            <Button
+              type="submit"
+              className="w-full bg-neutral-900 text-white"
+              disabled={isLoading}
+            >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === "login" ? "Sign in" : "Create account"}
             </Button>
