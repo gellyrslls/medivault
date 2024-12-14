@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { useToast } from "./use-toast";
 
 interface Product {
   id: string;
@@ -45,6 +46,8 @@ interface ApiResponse<T> {
 }
 
 export function useProducts() {
+  const { toast } = useToast();
+
   return useQuery<Product[]>({
     queryKey: ["products"],
     queryFn: async () => {
@@ -52,7 +55,11 @@ export function useProducts() {
         const response = await api.get<ProductsResponse>("/products");
         return response.products;
       } catch (error) {
-        console.error("Error fetching products:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch products. Please try again.",
+        });
         throw error;
       }
     },
@@ -61,62 +68,84 @@ export function useProducts() {
 
 export function useAddProduct() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (data: AddProductDTO) => {
-      try {
-        console.log("Adding product:", data);
-        const response = await api.post<ApiResponse<Product>>(
-          "/products",
-          data
-        );
-        console.log("Add product response:", response);
-        return response;
-      } catch (error) {
-        console.error("Error adding product:", error);
-        throw error;
-      }
+      const response = await api.post<ApiResponse<Product>>("/products", data);
+      return response;
     },
-    onSuccess: (data) => {
-      console.log("Product added successfully:", data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
-      queryClient.invalidateQueries({ queryKey: ["recentActivity"] });
+      toast({
+        title: "Success",
+        description: "Product added successfully",
+      });
     },
-    onError: (error) => {
-      console.error("Error in add product mutation:", error);
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add product. Please try again.",
+      });
+    },
+  });
+}
+
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (data: Product) => {
+      const response = await api.put<ApiResponse<Product>>(
+        `/products/${data.id}`,
+        data
+      );
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update product. Please try again.",
+      });
     },
   });
 }
 
 export function useUpdateStock() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (data: UpdateStockDTO) => {
-      try {
-        console.log("Updating stock:", data);
-        const response = await api.patch<ApiResponse<Product>>(
-          `/products/${data.productId}/stock`,
-          {
-            quantity: data.quantity,
-          }
-        );
-        console.log("Update stock response:", response);
-        return response;
-      } catch (error) {
-        console.error("Error updating stock:", error);
-        throw error;
-      }
+      const response = await api.patch<ApiResponse<Product>>(
+        `/products/${data.productId}/stock`,
+        { quantity: data.quantity }
+      );
+      return response;
     },
-    onSuccess: (data) => {
-      console.log("Stock updated successfully:", data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
-      queryClient.invalidateQueries({ queryKey: ["recentActivity"] });
+      toast({
+        title: "Success",
+        description: "Stock updated successfully",
+      });
     },
-    onError: (error) => {
-      console.error("Error in update stock mutation:", error);
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update stock. Please try again.",
+      });
     },
   });
 }
