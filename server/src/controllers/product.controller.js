@@ -1,7 +1,8 @@
 import prisma from "../utils/prisma.js";
 import { ApiError } from "../utils/ApiError.js";
 
-export const createProduct = async (req, res, next) => {
+// Create product controller
+const createProduct = async (req, res, next) => {
   try {
     const product = await prisma.product.create({
       data: {
@@ -30,7 +31,8 @@ export const createProduct = async (req, res, next) => {
   }
 };
 
-export const getProducts = async (req, res, next) => {
+// Get all products controller
+const getProducts = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search, category } = req.query;
     const skip = (page - 1) * Number(limit);
@@ -72,7 +74,8 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
-export const getProduct = async (req, res, next) => {
+// Get single product controller
+const getProduct = async (req, res, next) => {
   try {
     const product = await prisma.product.findUnique({
       where: { id: parseInt(req.params.id) },
@@ -91,7 +94,8 @@ export const getProduct = async (req, res, next) => {
   }
 };
 
-export const updateProduct = async (req, res, next) => {
+// Update product controller
+const updateProduct = async (req, res, next) => {
   try {
     const product = await prisma.product.update({
       where: { id: parseInt(req.params.id) },
@@ -123,7 +127,42 @@ export const updateProduct = async (req, res, next) => {
   }
 };
 
-export const deleteProduct = async (req, res, next) => {
+// Update stock controller
+const updateStock = async (req, res, next) => {
+  try {
+    console.log(
+      "Updating stock for product:",
+      req.params.id,
+      "New quantity:",
+      req.body.quantity
+    );
+
+    const product = await prisma.product.update({
+      where: {
+        id: parseInt(req.params.id),
+      },
+      data: {
+        quantity: parseInt(req.body.quantity),
+      },
+      include: {
+        supplier: true,
+      },
+    });
+
+    console.log("Stock updated successfully:", product);
+    res.json(product);
+  } catch (error) {
+    console.error("Error updating stock:", error);
+    if (error.code === "P2025") {
+      next(new ApiError(404, "Product not found"));
+    } else {
+      next(error);
+    }
+  }
+};
+
+// Delete product controller
+const deleteProduct = async (req, res, next) => {
   try {
     await prisma.product.delete({
       where: { id: parseInt(req.params.id) },
@@ -139,7 +178,8 @@ export const deleteProduct = async (req, res, next) => {
   }
 };
 
-export const getLowStockProducts = async (req, res, next) => {
+// Get low stock products controller
+const getLowStockProducts = async (req, res, next) => {
   try {
     const products = await prisma.product.findMany({
       where: {
@@ -156,4 +196,14 @@ export const getLowStockProducts = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export {
+  createProduct,
+  getProducts,
+  getProduct,
+  updateProduct,
+  deleteProduct,
+  getLowStockProducts,
+  updateStock,
 };
