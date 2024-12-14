@@ -1,5 +1,6 @@
 import { StatsCards } from "./components/StatsCards";
 import { RecentActivity } from "./components/RecentActivity";
+import { QuickActions } from "./components/QuickActions";
 
 export default function DashboardPage() {
   return (
@@ -8,8 +9,8 @@ export default function DashboardPage() {
       <div className="space-y-4">
         <StatsCards />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <RecentActivity />
-          {/* We can add more cards/widgets here later */}
+          <QuickActions />
+          <RecentActivity className="col-span-2" />
         </div>
       </div>
     </div>

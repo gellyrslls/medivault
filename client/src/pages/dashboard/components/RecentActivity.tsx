@@ -7,6 +7,7 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
+import { cn } from "@/lib/utils";
 
 interface Activity {
   id: string;
@@ -14,6 +15,10 @@ interface Activity {
   description: string;
   timestamp: Date;
   status?: string;
+}
+
+interface RecentActivityProps {
+  className?: string;
 }
 
 const getActivityIcon = (type: Activity["type"]) => {
@@ -44,11 +49,11 @@ function ActivitySkeleton() {
   );
 }
 
-export function RecentActivity() {
+export function RecentActivity({ className }: RecentActivityProps) {
   const { data: activities, isLoading, error } = useRecentActivity();
 
   return (
-    <Card className="col-span-3">
+    <Card className={cn("col-span-3", className)}>
       <CardHeader>
         <CardTitle>
           {isLoading ? <Skeleton className="h-6 w-32" /> : "Recent Activity"}
