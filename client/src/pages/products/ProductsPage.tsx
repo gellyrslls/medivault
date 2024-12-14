@@ -7,6 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddProductDialog } from "./components/product-dialog";
 import { LowStockAlert } from "./components/low-stock-alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProductDetails } from "./components/product-details";
+import { EditProductDialog } from "./components/edit-product-dialog";
+import { StockDialog } from "./components/stock-dialog";
+import { useState } from "react";
+import { Product } from "./columns";
 
 // Mock suppliers until we implement supplier management
 const mockSuppliers = [
@@ -16,6 +21,20 @@ const mockSuppliers = [
 
 export default function ProductsPage() {
   const { data: products, isLoading, error } = useProducts();
+
+  // Dialog states
+  const [detailsDialog, setDetailsDialog] = useState<{open: boolean; product: Product | null}>({
+    open: false,
+    product: null
+  });
+  const [editDialog, setEditDialog] = useState<{open: boolean; product: Product | null}>({
+    open: false,
+    product: null
+  });
+  const [stockDialog, setStockDialog] = useState<{open: boolean; product: Product | null}>({
+    open: false,
+    product: null
+  });
 
   if (error) {
     return (
@@ -47,10 +66,51 @@ export default function ProductsPage() {
               <Skeleton className="h-8 w-full" />
             </div>
           ) : (
-            <DataTable columns={columns} data={products || []} />
+            <DataTable 
+              columns={columns({
+                onViewDetails: (product) => setDetailsDialog({ open: true, product }),
+                onEdit: (product) => setEditDialog({ open: true, product }),
+                onUpdateStock: (product) => setStockDialog({ open: true, product })
+              })} 
+              data={products || []} 
+            />
           )}
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      {detailsDialog.product && (
+        <ProductDetails 
+          open={detailsDialog.open}
+          onOpenChange={(open) => setDetailsDialog(prev => ({ ...prev, open }))}
+          product={detailsDialog.product}
+          onEdit={() => {
+            setDetailsDialog({ open: false, product: null });
+            setEditDialog({ open: true, product: detailsDialog.product });
+          }}
+          onDelete={() => {
+            setDetailsDialog({ open: false, product: null });
+            // Delete functionality will be implemented later
+          }}
+        />
+      )}
+
+      {editDialog.product && (
+        <EditProductDialog
+          open={editDialog.open}
+          onOpenChange={(open) => setEditDialog(prev => ({ ...prev, open }))}
+          product={editDialog.product}
+          suppliers={mockSuppliers}
+        />
+      )}
+
+      {stockDialog.product && (
+        <StockDialog
+          open={stockDialog.open}
+          onOpenChange={(open) => setStockDialog(prev => ({ ...prev, open }))}
+          product={stockDialog.product}
+        />
+      )}
     </div>
   );
 }

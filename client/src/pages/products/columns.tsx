@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
-import { StockDialog } from "./components/stock-dialog";
 
 // Interface from our useProducts hook
 export type Product = {
@@ -31,7 +29,17 @@ export type Product = {
   supplierId: string;
 };
 
-export const columns: ColumnDef<Product>[] = [
+interface ColumnsProps {
+  onViewDetails: (product: Product) => void;
+  onEdit: (product: Product) => void;
+  onUpdateStock: (product: Product) => void;
+}
+
+export const columns = ({
+  onViewDetails,
+  onEdit,
+  onUpdateStock,
+}: ColumnsProps): ColumnDef<Product>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -136,45 +144,40 @@ export const columns: ColumnDef<Product>[] = [
   },
   {
     id: "actions",
-    cell: function ActionsCell({ row }) {
-      const [stockDialogOpen, setStockDialogOpen] = useState(false);
+    cell: ({ row }) => {
       const product = row.original;
 
       return (
-        <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(product.id)}
-              >
-                Copy product ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>View details</DropdownMenuItem>
-              <DropdownMenuItem>Edit product</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStockDialogOpen(true)}>
-                Update stock
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                Delete product
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <StockDialog
-            open={stockDialogOpen}
-            onOpenChange={setStockDialogOpen}
-            product={product}
-          />
-        </>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(product.id)}
+            >
+              Copy product ID
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onViewDetails(product)}>
+              View details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(product)}>
+              Edit product
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onUpdateStock(product)}>
+              Update stock
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive">
+              Delete product
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
   },

@@ -28,8 +28,6 @@ export function StockDialog({ open, onOpenChange, product }: StockDialogProps) {
 
   const handleSubmit = async () => {
     try {
-      console.log("Attempting to update stock for product:", product.id);
-
       if (!product.id) {
         throw new Error("Product ID is missing");
       }
@@ -43,35 +41,44 @@ export function StockDialog({ open, onOpenChange, product }: StockDialogProps) {
         return;
       }
 
-      const response = await updateStock.mutateAsync({
+      await updateStock.mutateAsync({
         productId: product.id,
         quantity: Number(quantity),
       });
-
-      console.log("Stock update response:", response);
 
       toast({
         title: "Stock Updated",
         description: `Successfully updated stock for ${product.name}`,
       });
 
-      onOpenChange(false);
+      // Wait a small delay before closing to ensure state is updated
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 100);
     } catch (error) {
       console.error("Error updating stock:", error);
-
       toast({
         title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to update stock level",
+        description: error instanceof Error ? error.message : "Failed to update stock level",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={open} 
+      onOpenChange={(value) => {
+        // Only allow dialog close if not in pending state
+        if (!updateStock.isPending) {
+          onOpenChange(value);
+          // Reset quantity when dialog closes
+          if (!value) {
+            setQuantity(product.quantity);
+          }
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Update Stock Level</DialogTitle>
