@@ -45,12 +45,10 @@ export function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route element={<Layout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/suppliers" element={<SuppliersPage />} />
-          </Route>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/suppliers" element={<SuppliersPage />} />
         </Route>
 
         {/* Catch all */}

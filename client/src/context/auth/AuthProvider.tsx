@@ -27,17 +27,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Function to check auth status
   const checkAuth = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await client<{ user: User }>("/auth/profile");
-      setUser(response.user);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setUser(null);
+        return;
+      }
+
+      // Try to get user profile
+      const response = await client<User>("/auth/profile");
+      setUser(response);
     } catch (error) {
       console.error("Auth check failed:", error);
+      // Clear invalid token
       localStorage.removeItem("token");
       setUser(null);
     } finally {
@@ -105,11 +107,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     register,
   };
-
-  // Show loading state while checking auth
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
