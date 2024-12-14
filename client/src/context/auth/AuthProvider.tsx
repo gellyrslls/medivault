@@ -25,31 +25,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // Function to check auth status
+  const checkAuth = async () => {
     const token = localStorage.getItem("token");
-    if (token) {
-      // Fetch user profile when component mounts if token exists
-      client<{ user: User }>("/auth/profile")
-        .then((response) => {
-          setUser(response.user);
-        })
-        .catch(() => {
-          // If token is invalid, clear it
-          localStorage.removeItem("token");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await client<{ user: User }>("/auth/profile");
+      setUser(response.user);
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      localStorage.removeItem("token");
+      setUser(null);
+    } finally {
       setLoading(false);
     }
+  };
+
+  // Check auth status when component mounts
+  useEffect(() => {
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       const response = await client<LoginResponse>("/auth/login", {
         method: "POST",
-        body: { email, password }, // Now this will work with our updated api client
+        body: { email, password },
       });
 
       localStorage.setItem("token", response.token);
@@ -70,7 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await client<RegisterResponse>("/auth/register", {
         method: "POST",
-        body: { email, password }, // Remove JSON.stringify here too
+        body: { email, password },
       });
 
       localStorage.setItem("token", response.token);
@@ -93,17 +98,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        logout,
-        register,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    user,
+    loading,
+    login,
+    logout,
+    register,
+  };
+
+  // Show loading state while checking auth
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

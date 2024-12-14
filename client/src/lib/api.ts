@@ -31,6 +31,14 @@ export async function client<T>(
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
+    
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login"; // Redirect to login
+      throw new Error("Unauthorized access");
+    }
+
     const data = await response.json();
 
     if (response.ok) {
