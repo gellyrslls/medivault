@@ -67,27 +67,39 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
     try {
       setIsLoading(true);
       if (mode === "login") {
-        await login({
-          email: values.email,
-          password: values.password,
-        });
-        navigate("/dashboard");
+        const result = await login(values.email, values.password);
+        if (result.success) {
+          navigate("/dashboard");
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: result.error?.message || "Login failed",
+          });
+        }
       } else {
-        // Type assertion since we know it's a register form
+        // Handle register
         const registerValues = values as z.infer<typeof registerSchema>;
-        await register({
-          email: registerValues.email,
-          password: registerValues.password,
-          confirmPassword: registerValues.confirmPassword,
-        });
-        navigate("/dashboard");
+        const result = await register(
+          registerValues.email,
+          registerValues.password
+        );
+        if (result.success) {
+          navigate("/dashboard");
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: result.error?.message || "Registration failed",
+          });
+        }
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Authentication failed.",
+          error instanceof Error ? error.message : "Authentication failed",
       });
     } finally {
       setIsLoading(false);

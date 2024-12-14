@@ -1,14 +1,28 @@
 import { createContext } from "react";
-import type { LoginCredentials, RegisterCredentials, AuthState } from "@/types";
 
-interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
-  isLoading: boolean;
+interface User {
+  id: number;
+  email: string;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+// Create an error type instead of using 'any'
+interface AuthError {
+  message: string;
+  code?: string | number;
+}
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: AuthError }>;
+  register: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: AuthError }>;
+  logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextType | null>(null);

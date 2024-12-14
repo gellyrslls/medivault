@@ -1,27 +1,15 @@
-import { ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/auth/hooks";
-import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Navigate } from "react-router-dom";
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-}
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
-
-  if (isLoading) {
-    return (
-      <Card className="w-full h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </Card>
-    );
+  if (loading) {
+    return <div>Loading...</div>; // Or a proper loading spinner
   }
 
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!user) {
+    return <Navigate to="/login" />;
   }
 
   return <>{children}</>;
