@@ -27,7 +27,7 @@ export async function client<T>(
   }
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    
+
     // Handle 401 Unauthorized
     if (response.status === 401) {
       localStorage.removeItem("token");
@@ -49,21 +49,43 @@ export const api = {
   async get<T>(endpoint: string, config: Omit<ApiRequestConfig, "body"> = {}) {
     return client<T>(endpoint, { ...config, method: "GET" });
   },
-  async post<T>(endpoint: string, data: unknown, config: Omit<ApiRequestConfig, "body"> = {}) {
-    return client<T>(endpoint, { 
-      ...config, 
+  async post<T>(
+    endpoint: string,
+    data: unknown,
+    config: Omit<ApiRequestConfig, "body"> = {}
+  ) {
+    return client<T>(endpoint, {
+      ...config,
       method: "POST",
-      body: data as Record<string, unknown>
+      body: data as Record<string, unknown>,
     });
   },
-  async patch<T>(endpoint: string, data: unknown, config: Omit<ApiRequestConfig, "body"> = {}) {
+  async put<T>(
+    endpoint: string,
+    data: unknown,
+    config: Omit<ApiRequestConfig, "body"> = {}
+  ) {
+    return client<T>(endpoint, {
+      ...config,
+      method: "PUT",
+      body: data as Record<string, unknown>,
+    });
+  },
+  async patch<T>(
+    endpoint: string,
+    data: unknown,
+    config: Omit<ApiRequestConfig, "body"> = {}
+  ) {
     return client<T>(endpoint, {
       ...config,
       method: "PATCH",
-      body: data as Record<string, unknown>
+      body: data as Record<string, unknown>,
     });
   },
-  async delete<T>(endpoint: string, config: Omit<ApiRequestConfig, "body"> = {}) {
+  async delete<T>(
+    endpoint: string,
+    config: Omit<ApiRequestConfig, "body"> = {}
+  ) {
     return client<T>(endpoint, { ...config, method: "DELETE" });
-  }
+  },
 };
