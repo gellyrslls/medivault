@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/auth/AuthProvider";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
+import ProductsPage from "@/pages/products/ProductsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <DashboardPage />,
+      },
+      {
+        path: "products",
+        element: <ProductsPage />,
       },
     ],
   },

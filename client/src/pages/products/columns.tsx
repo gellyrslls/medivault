@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal, ArrowUpDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,22 +13,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { format } from "date-fns"
+} from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
+import { StockDialog } from "./components/stock-dialog";
 
 // Interface from our useProducts hook
 export type Product = {
-  id: string
-  name: string
-  sku: string
-  quantity: number
-  minStockLevel: number
-  price: number
-  category: 'OTC' | 'PRESCRIPTION'
-  expiryDate: Date
-  description?: string
-  supplierId: string
-}
+  id: string;
+  name: string;
+  sku: string;
+  quantity: number;
+  minStockLevel: number;
+  price: number;
+  category: "OTC" | "PRESCRIPTION";
+  expiryDate: Date;
+  description?: string;
+  supplierId: string;
+};
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -63,7 +65,7 @@ export const columns: ColumnDef<Product>[] = [
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
   },
   {
@@ -74,24 +76,24 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => {
-      const category = row.getValue("category") as "OTC" | "PRESCRIPTION"
+      const category = row.getValue("category") as "OTC" | "PRESCRIPTION";
       return (
         <Badge variant={category === "OTC" ? "secondary" : "default"}>
           {category}
         </Badge>
-      )
+      );
     },
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
+      return value.includes(row.getValue(id));
     },
   },
   {
     accessorKey: "quantity",
     header: "Stock",
     cell: ({ row }) => {
-      const quantity = row.getValue("quantity") as number
-      const minStock = row.original.minStockLevel
-      
+      const quantity = row.getValue("quantity") as number;
+      const minStock = row.original.minStockLevel;
+
       return (
         <div className="flex items-center gap-2">
           <span className="font-medium">{quantity}</span>
@@ -99,71 +101,81 @@ export const columns: ColumnDef<Product>[] = [
             <Badge variant="destructive">Low Stock</Badge>
           )}
         </div>
-      )
+      );
     },
   },
   {
     accessorKey: "price",
     header: () => <div className="text-right">Price</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("price"))
+      const amount = parseFloat(row.getValue("price"));
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount)
- 
-      return <div className="text-right font-medium">{formatted}</div>
+      }).format(amount);
+
+      return <div className="text-right font-medium">{formatted}</div>;
     },
   },
   {
     accessorKey: "expiryDate",
     header: "Expiry",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("expiryDate"))
-      const formatted = format(date, "MMM dd, yyyy")
-      const isNearExpiry = date.getTime() - new Date().getTime() < 1000 * 60 * 60 * 24 * 30 // 30 days
-      
+      const date = new Date(row.getValue("expiryDate"));
+      const formatted = format(date, "MMM dd, yyyy");
+      const isNearExpiry =
+        date.getTime() - new Date().getTime() < 1000 * 60 * 60 * 24 * 30; // 30 days
+
       return (
         <div className="flex items-center gap-2">
           <span>{formatted}</span>
-          {isNearExpiry && (
-            <Badge variant="destructive">Expiring Soon</Badge>
-          )}
+          {isNearExpiry && <Badge variant="destructive">Expiring Soon</Badge>}
         </div>
-      )
+      );
     },
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const product = row.original
- 
+    cell: function ActionsCell({ row }) {
+      const [stockDialogOpen, setStockDialogOpen] = useState(false);
+      const product = row.original;
+
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(product.id)}
-            >
-              Copy product ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>Edit product</DropdownMenuItem>
-            <DropdownMenuItem>Update stock</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              Delete product
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(product.id)}
+              >
+                Copy product ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>View details</DropdownMenuItem>
+              <DropdownMenuItem>Edit product</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStockDialogOpen(true)}>
+                Update stock
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive">
+                Delete product
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <StockDialog
+            open={stockDialogOpen}
+            onOpenChange={setStockDialogOpen}
+            product={product}
+          />
+        </>
+      );
     },
   },
-]
+];
