@@ -9,6 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Products module initial implementation
+  - Product form with validation
+  - Add/Edit product dialogs
+  - Data table setup
+- New shadcn/ui components
+  - Table
+  - Calendar
+  - Badge
+  - Checkbox
+  - Popover
+  - Textarea
+
+### Changed
+
+- Updated routing configuration
+- Improved project structure
+
+## Added
+
+- Quick Actions component on dashboard
+  - Quick add product functionality
+  - Quick stock update functionality
+  - Navigation to supplier and reports
+- Products API hooks using React Query
+  - useProducts hook for fetching products
+  - useAddProduct for adding new products
+  - useUpdateStock for updating stock levels
+
+## Changed
+
+- Extended API client to support React Query operations
+- Updated dashboard layout to include Quick Actions
+- Modified RecentActivity component to support custom styling
+
+## Fixed
+
+- API client type definitions and error handling
+- Auth compatibility with new API features
+
+### Added
+
 - Enhanced authentication UI with shadcn/ui components
 - Form validation using react-hook-form and zod
 - Global CSS theme setup for shadcn/ui
@@ -61,6 +102,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Mobile responsiveness improvements
 - Frontend layout implementation
+
+## [0.3.0] - 2024-12-14
+
+### Added
+
+- Collapsible sidebar implementation using shadcn-ui
+- Font Awesome icons integration
+- Mobile-responsive sidebar with Sheet component
+- User profile menu in sidebar
+- Breadcrumb navigation component
+
+### Fixed
+
+- Authentication state persistence through page refreshes
+- Token management and error handling
+- Sidebar navigation and routing
+
+### Changed
+
+- Updated layout structure to use shadcn-ui patterns
+- Improved mobile responsiveness
+- Enhanced user experience with collapsible sidebar
 
 ## [0.2.0] - 2024-12-07
 
