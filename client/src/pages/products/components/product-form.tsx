@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -15,22 +15,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 // Zod schema for form validation
 const productFormSchema = z.object({
@@ -59,30 +60,30 @@ const productFormSchema = z.object({
     message: "Please select a supplier.",
   }),
   description: z.string().optional(),
-})
+});
 
-type ProductFormValues = z.infer<typeof productFormSchema>
+type ProductFormValues = z.infer<typeof productFormSchema>;
 
 // This can come from your API/Context
 interface Supplier {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface ProductFormProps {
-  initialData?: Partial<ProductFormValues>
-  suppliers: Supplier[]
-  onSubmit: (data: ProductFormValues) => Promise<void>
-  isLoading?: boolean
+  initialData?: Partial<ProductFormValues>;
+  suppliers: Supplier[];
+  onSubmit: (data: ProductFormValues) => Promise<void>;
+  isLoading?: boolean;
 }
 
-export function ProductForm({ 
-  initialData, 
-  suppliers, 
+export function ProductForm({
+  initialData,
+  suppliers,
   onSubmit,
-  isLoading
+  isLoading,
 }: ProductFormProps) {
-  const { toast } = useToast()
+  const { toast } = useToast();
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
@@ -96,22 +97,22 @@ export function ProductForm({
       supplierId: initialData?.supplierId || "",
       description: initialData?.description || "",
     },
-  })
+  });
 
   async function onFormSubmit(data: ProductFormValues) {
     try {
-      await onSubmit(data)
+      await onSubmit(data);
       toast({
         title: "Success",
         description: "Product saved successfully.",
-      })
+      });
     } catch (error) {
-      console.error('Error saving product:', error)
+      console.error("Error saving product:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Something went wrong. Please try again.",
-      })
+      });
     }
   }
 
@@ -153,7 +154,10 @@ export function ProductForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
@@ -178,7 +182,11 @@ export function ProductForm({
               <FormItem>
                 <FormLabel>Quantity</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -192,7 +200,11 @@ export function ProductForm({
               <FormItem>
                 <FormLabel>Min Stock Level</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -206,7 +218,12 @@ export function ProductForm({
               <FormItem>
                 <FormLabel>Price</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" {...field} />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -227,7 +244,7 @@ export function ProductForm({
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "pl-3 text-left font-normal",
+                          "w-full pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
@@ -241,11 +258,14 @@ export function ProductForm({
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <input
-                      type="date"
-                      className="w-full p-2"
-                      onChange={(e) => field.onChange(new Date(e.target.value))}
-                      min={new Date().toISOString().split('T')[0]}
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date < new Date(new Date().setHours(0, 0, 0, 0))
+                      }
+                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -260,7 +280,10 @@ export function ProductForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Supplier</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select supplier" />
@@ -299,5 +322,5 @@ export function ProductForm({
         </Button>
       </form>
     </Form>
-  )
+  );
 }
