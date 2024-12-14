@@ -5,9 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - v0.4.1
+
+### Added
+
+- Stock Management Features
+  - Stock update dialog for modifying product quantities
+  - Low stock alerts component with visual indicators
+  - Real-time stock level tracking
+- Enhanced Error Handling
+  - Detailed error logging for debugging
+  - User-friendly error messages
+  - Form validation improvements
+- New UI Components
+  - Alert component for notifications
+  - Calendar component improvements
+  - Dedicated product components directory
+
+### Changed
+
+- Improved calendar functionality in product form
+- Enhanced API hooks with better error handling
+- Reorganized product components structure
+- Updated routing configuration
+- Enhanced form validation
+
+### Fixed
+
+- Calendar functionality in product form
+- Stock update endpoint issues
+- Form validation in product management
+- Component file organization
+- API response handling
+
 ## [Unreleased] - v0.4.0
 
 ### Added
+
 - Products module initial implementation
   - Product form with validation
   - Add/Edit product dialogs
@@ -29,12 +63,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - useUpdateStock for updating stock levels
 
 ### Changed
+
 - Updated routing configuration
 - Extended API client to support React Query operations
 - Updated dashboard layout to include Quick Actions
 - Modified RecentActivity component to support custom styling
 
 ### Fixed
+
 - Login redirect prevention
 - API client type definitions and error handling
 - Auth compatibility with new API features
@@ -42,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - 2024-12-14
 
 ### Added
+
 - Collapsible sidebar implementation using shadcn-ui
 - Font Awesome icons integration
 - Mobile-responsive sidebar with Sheet component
@@ -52,12 +89,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Empty state handling for activity feed
 
 ### Changed
+
 - Updated layout structure to use shadcn-ui patterns
 - Improved mobile responsiveness
 - Migrated to hook-based authentication from context-based
 - Enhanced user experience with collapsible sidebar
 
 ### Fixed
+
 - Authentication state persistence through page refreshes
 - Token management and error handling
 - Sidebar navigation and routing
@@ -65,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2024-12-07
 
 ### Added
+
 - Authentication UI implementation
   - Login form with Zod validation
   - Registration form with validation
@@ -81,6 +121,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Sheet component for mobile navigation
 
 ### Changed
+
 - Frontend project structure reorganization
   - Implemented feature-based directory structure
   - Updated TypeScript configuration for path aliases
@@ -88,12 +129,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Frontend build configuration updates
 
 ### Fixed
+
 - Frontend TypeScript path resolution
 - Component import/export structures
 
 ## [0.1.0] - 2024-12-04
 
 ### Added
+
 - Complete Express server setup with middleware configuration
 - PostgreSQL database integration with Prisma ORM
 - Authentication system with JWT
@@ -120,11 +163,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Category enumeration
 
 ### Changed
+
 - Migrated database layer from Mongoose to Prisma
 - Updated authentication middleware naming
 - Package dependencies resolution
 
 ### Fixed
+
 - Authentication middleware import issues
 - Package dependency conflicts
 - Server configuration issues
@@ -132,6 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.1] - 2024-11-30
 
 ### Added
+
 - Initial project scaffolding and setup
 - Basic directory structure
 - Core dependencies installation
