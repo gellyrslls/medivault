@@ -1,8 +1,12 @@
 export const BASE_URL = "http://localhost:5000/api";
 
+type ApiRequestConfig = {
+  body?: Record<string, unknown> | string;
+} & Omit<RequestInit, "body">;
+
 export async function client<T>(
   endpoint: string,
-  { body, ...customConfig }: RequestInit = {}
+  { body, ...customConfig }: ApiRequestConfig = {}
 ): Promise<T> {
   const token = localStorage.getItem("token");
   const headers: HeadersInit = {
@@ -14,7 +18,6 @@ export async function client<T>(
   }
 
   const config: RequestInit = {
-    method: body ? "POST" : "GET",
     ...customConfig,
     headers: {
       ...headers,
@@ -23,18 +26,20 @@ export async function client<T>(
   };
 
   if (body) {
-    config.body = JSON.stringify(body);
+    config.body = typeof body === "string" ? body : JSON.stringify(body);
   }
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
+    const data = await response.json();
+
     if (response.ok) {
-      return await response.json();
-    } else {
-      const errorData = await response.json();
-      return Promise.reject(new Error(errorData.message));
+      return data;
     }
+
+    throw new Error(data.message || "Request failed");
   } catch (error) {
-    return Promise.reject(error);
+    console.error("API Error:", error);
+    throw error;
   }
 }
