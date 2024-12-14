@@ -12,11 +12,9 @@ export async function client<T>(
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
-
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
-
   const config: RequestInit = {
     ...customConfig,
     headers: {
@@ -24,11 +22,9 @@ export async function client<T>(
       ...customConfig.headers,
     },
   };
-
   if (body) {
     config.body = typeof body === "string" ? body : JSON.stringify(body);
   }
-
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
     
@@ -38,16 +34,37 @@ export async function client<T>(
       window.location.href = "/login"; // Redirect to login
       throw new Error("Unauthorized access");
     }
-
     const data = await response.json();
-
     if (response.ok) {
       return data;
     }
-
     throw new Error(data.message || "Request failed");
   } catch (error) {
     console.error("API Error:", error);
     throw error;
   }
 }
+
+// Export the API client for use with React Query and other features
+export const api = {
+  async get<T>(endpoint: string, config: Omit<ApiRequestConfig, "body"> = {}) {
+    return client<T>(endpoint, { ...config, method: "GET" });
+  },
+  async post<T>(endpoint: string, data: unknown, config: Omit<ApiRequestConfig, "body"> = {}) {
+    return client<T>(endpoint, { 
+      ...config, 
+      method: "POST",
+      body: data as Record<string, unknown>
+    });
+  },
+  async patch<T>(endpoint: string, data: unknown, config: Omit<ApiRequestConfig, "body"> = {}) {
+    return client<T>(endpoint, {
+      ...config,
+      method: "PATCH",
+      body: data as Record<string, unknown>
+    });
+  },
+  async delete<T>(endpoint: string, config: Omit<ApiRequestConfig, "body"> = {}) {
+    return client<T>(endpoint, { ...config, method: "DELETE" });
+  }
+};
