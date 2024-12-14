@@ -3,7 +3,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Layout } from "@/components/layout/Layout";
-import { AuthProvider } from "@/context/auth/AuthProvider"; // Add this import
+import { AuthProvider } from "@/context/auth/AuthProvider";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";

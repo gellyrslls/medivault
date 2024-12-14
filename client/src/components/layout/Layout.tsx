@@ -1,42 +1,39 @@
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
-import { Sidebar } from "./Sidebar";
-import { Header } from "./Header";
+import { Outlet } from "react-router-dom"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "./app-sidebar"  // Fixed import
 
 export function Layout() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Mobile Menu Button */}
-      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetTrigger asChild className="lg:hidden">
-          <Button variant="ghost" size="icon" className="absolute left-4 top-4">
-            <Menu className="h-6 w-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="p-0">
-          <Sidebar />
-        </SheetContent>
-      </Sheet>
-
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
-        <Sidebar />
-      </div>
-
-      {/* Main Content */}
-      <div className="lg:pl-72">
-        <Header />
-        <main className="py-10">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <Outlet />
-          </div>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "350px",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar />
+      <SidebarInset>
+        <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Overview</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <main className="flex flex-1 flex-col p-4">
+          <Outlet />
         </main>
-      </div>
-    </div>
-  );
+      </SidebarInset>
+    </SidebarProvider>
+  )
 }
