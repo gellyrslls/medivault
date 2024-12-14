@@ -18,7 +18,7 @@ const DashboardPage = lazy(() =>
 );
 
 const ProductsPage = lazy(() =>
-  import("@/pages/inventory/ProductsPage").then((mod) => ({
+  import("@/pages/products/ProductsPage").then((mod) => ({
     default: mod.default,
   }))
 );
@@ -38,7 +38,13 @@ export function AppRoutes() {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* Protected routes */}
-        <Route element={<ProtectedRoute />}>
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route element={<Layout />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
