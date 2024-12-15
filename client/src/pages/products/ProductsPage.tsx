@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProductDetails } from "./components/product-details";
 import { EditProductDialog } from "./components/edit-product-dialog";
 import { StockDialog } from "./components/stock-dialog";
+import { DeleteProductDialog } from "./components/delete-product-dialog";
 import { useState } from "react";
 import { Product } from "./columns";
 
@@ -23,17 +24,33 @@ export default function ProductsPage() {
   const { data: products, isLoading, error } = useProducts();
 
   // Dialog states
-  const [detailsDialog, setDetailsDialog] = useState<{open: boolean; product: Product | null}>({
+  const [detailsDialog, setDetailsDialog] = useState<{
+    open: boolean;
+    product: Product | null;
+  }>({
     open: false,
-    product: null
+    product: null,
   });
-  const [editDialog, setEditDialog] = useState<{open: boolean; product: Product | null}>({
+  const [editDialog, setEditDialog] = useState<{
+    open: boolean;
+    product: Product | null;
+  }>({
     open: false,
-    product: null
+    product: null,
   });
-  const [stockDialog, setStockDialog] = useState<{open: boolean; product: Product | null}>({
+  const [stockDialog, setStockDialog] = useState<{
+    open: boolean;
+    product: Product | null;
+  }>({
     open: false,
-    product: null
+    product: null,
+  });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    product: Product | null;
+  }>({
+    open: false,
+    product: null,
   });
 
   if (error) {
@@ -66,13 +83,16 @@ export default function ProductsPage() {
               <Skeleton className="h-8 w-full" />
             </div>
           ) : (
-            <DataTable 
+            <DataTable
               columns={columns({
-                onViewDetails: (product) => setDetailsDialog({ open: true, product }),
+                onViewDetails: (product) =>
+                  setDetailsDialog({ open: true, product }),
                 onEdit: (product) => setEditDialog({ open: true, product }),
-                onUpdateStock: (product) => setStockDialog({ open: true, product })
-              })} 
-              data={products || []} 
+                onUpdateStock: (product) =>
+                  setStockDialog({ open: true, product }),
+                onDelete: (product) => setDeleteDialog({ open: true, product }),
+              })}
+              data={products || []}
             />
           )}
         </CardContent>
@@ -80,9 +100,11 @@ export default function ProductsPage() {
 
       {/* Dialogs */}
       {detailsDialog.product && (
-        <ProductDetails 
+        <ProductDetails
           open={detailsDialog.open}
-          onOpenChange={(open) => setDetailsDialog(prev => ({ ...prev, open }))}
+          onOpenChange={(open) =>
+            setDetailsDialog((prev) => ({ ...prev, open }))
+          }
           product={detailsDialog.product}
           onEdit={() => {
             setDetailsDialog({ open: false, product: null });
@@ -90,7 +112,7 @@ export default function ProductsPage() {
           }}
           onDelete={() => {
             setDetailsDialog({ open: false, product: null });
-            // Delete functionality will be implemented later
+            setDeleteDialog({ open: true, product: detailsDialog.product });
           }}
         />
       )}
@@ -98,7 +120,7 @@ export default function ProductsPage() {
       {editDialog.product && (
         <EditProductDialog
           open={editDialog.open}
-          onOpenChange={(open) => setEditDialog(prev => ({ ...prev, open }))}
+          onOpenChange={(open) => setEditDialog((prev) => ({ ...prev, open }))}
           product={editDialog.product}
           suppliers={mockSuppliers}
         />
@@ -107,8 +129,18 @@ export default function ProductsPage() {
       {stockDialog.product && (
         <StockDialog
           open={stockDialog.open}
-          onOpenChange={(open) => setStockDialog(prev => ({ ...prev, open }))}
+          onOpenChange={(open) => setStockDialog((prev) => ({ ...prev, open }))}
           product={stockDialog.product}
+        />
+      )}
+
+      {deleteDialog.product && (
+        <DeleteProductDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) =>
+            setDeleteDialog((prev) => ({ ...prev, open }))
+          }
+          product={deleteDialog.product}
         />
       )}
     </div>

@@ -33,12 +33,14 @@ interface ColumnsProps {
   onViewDetails: (product: Product) => void;
   onEdit: (product: Product) => void;
   onUpdateStock: (product: Product) => void;
+  onDelete: (product: Product) => void;
 }
 
 export const columns = ({
   onViewDetails,
   onEdit,
   onUpdateStock,
+  onDelete,
 }: ColumnsProps): ColumnDef<Product>[] => [
   {
     id: "select",
@@ -173,7 +175,10 @@ export const columns = ({
               Update stock
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem
+              onClick={() => onDelete(product)}
+              className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
+            >
               Delete product
             </DropdownMenuItem>
           </DropdownMenuContent>

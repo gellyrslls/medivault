@@ -25,20 +25,34 @@ export async function client<T>(
   if (body) {
     config.body = typeof body === "string" ? body : JSON.stringify(body);
   }
-  try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, config);
+  
+  const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
-    // Handle 401 Unauthorized
-    if (response.status === 401) {
-      localStorage.removeItem("token");
-      throw new Error("Unauthorized access");
-    }
-    const data = await response.json();
+  // Handle 401 Unauthorized
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    throw new Error("Unauthorized access");
+  }
+
+  // Handle 204 No Content
+  if (response.status === 204) {
+    return {} as T;
+  }
+
+  // Only try to parse JSON if there's content
+  try {
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : {};
+    
     if (response.ok) {
       return data;
     }
     throw new Error(data.message || "Request failed");
   } catch (error) {
+    if (response.ok) {
+      // If response was successful but couldn't parse JSON, return empty object
+      return {} as T;
+    }
     console.error("API Error:", error);
     throw error;
   }

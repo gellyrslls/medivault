@@ -45,6 +45,11 @@ interface ApiResponse<T> {
   status: number;
 }
 
+// Type for mutation context
+interface DeleteContext {
+  previousProducts: Product[] | undefined;
+}
+
 export function useProducts() {
   const { toast } = useToast();
 
@@ -145,6 +150,59 @@ export function useUpdateStock() {
         variant: "destructive",
         title: "Error",
         description: "Failed to update stock. Please try again.",
+      });
+    },
+  });
+}
+
+export function useDeleteProduct() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (productId: string) => {
+      await api.delete<void>(`/products/${productId}`);
+      return productId; // Return the ID for optimistic updates
+    },
+    onMutate: async (productId: string) => {
+      // Cancel any outgoing queries
+      await queryClient.cancelQueries({ queryKey: ["products"] });
+
+      // Save current state
+      const previousProducts = queryClient.getQueryData<Product[]>([
+        "products",
+      ]);
+
+      // Optimistically update
+      if (previousProducts) {
+        queryClient.setQueryData<Product[]>(
+          ["products"],
+          previousProducts.filter((product) => product.id !== productId)
+        );
+      }
+
+      return { previousProducts } as DeleteContext;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+    },
+    onError: (
+      _error: unknown,
+      _variables: string,
+      context: DeleteContext | undefined
+    ) => {
+      // Revert optimistic update on error
+      if (context?.previousProducts) {
+        queryClient.setQueryData(["products"], context.previousProducts);
+      }
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete product. Please try again.",
       });
     },
   });
