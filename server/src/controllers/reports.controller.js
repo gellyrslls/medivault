@@ -1,6 +1,12 @@
 import prisma from "../utils/prisma.js";
 import { ApiError } from "../utils/ApiError.js";
 
+const isExpiringSoon = (expiryDate) => {
+  const expiryTime = new Date(expiryDate).getTime();
+  const now = new Date().getTime();
+  return expiryTime - now < 1000 * 60 * 60 * 24 * 30; // 30 days
+};
+
 export const getLowStockProducts = async (req, res, next) => {
   try {
     const products = await prisma.product.findMany({
@@ -14,7 +20,12 @@ export const getLowStockProducts = async (req, res, next) => {
       },
     });
 
-    res.json(products);
+    const formattedProducts = products.map(product => ({
+      ...product,
+      id: Number(product.id)
+    }));
+
+    res.json(formattedProducts);
   } catch (error) {
     next(error);
   }
@@ -22,32 +33,31 @@ export const getLowStockProducts = async (req, res, next) => {
 
 export const getInventoryStatus = async (req, res, next) => {
   try {
-    const [products, lowStock] = await Promise.all([
-      prisma.product.findMany({
-        include: {
-          supplier: true,
-        },
-      }),
-      prisma.product.findMany({
-        where: {
-          quantity: {
-            lte: prisma.product.fields.minStockLevel,
-          },
-        },
-      }),
-    ]);
+    const products = await prisma.product.findMany({
+      include: {
+        supplier: true,
+      },
+    });
+
+    const lowStock = products.filter(product => 
+      product.quantity <= product.minStockLevel
+    );
+
+    const expiringProducts = products.filter(product => isExpiringSoon(product.expiryDate));
+    const suppliersCount = await prisma.supplier.count();
 
     const totalProducts = products.length;
     const totalValue = products.reduce(
       (sum, product) => sum + product.price.toNumber() * product.quantity,
       0
     );
-    const lowStockCount = lowStock.length;
 
     res.json({
       totalProducts,
       totalValue,
-      lowStockCount,
+      lowStockCount: lowStock.length,
+      totalSuppliers: suppliersCount,
+      expiringCount: expiringProducts.length,
       products,
     });
   } catch (error) {
@@ -57,25 +67,32 @@ export const getInventoryStatus = async (req, res, next) => {
 
 export const getExpiringProducts = async (req, res, next) => {
   try {
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-
     const products = await prisma.product.findMany({
-      where: {
-        expiryDate: {
-          lte: thirtyDaysFromNow,
-          gte: new Date(),
-        },
-      },
       include: {
         supplier: true,
       },
       orderBy: {
-        expiryDate: "asc",
+        expiryDate: 'asc',
       },
     });
 
-    res.json(products);
+    // Filter and format expiring products
+    const formattedProducts = products
+      .filter(product => isExpiringSoon(product.expiryDate))
+      .map(product => {
+        const expiryDate = new Date(product.expiryDate);
+        const daysUntilExpiry = Math.ceil(
+          (expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        return {
+          ...product,
+          id: Number(product.id),
+          daysUntilExpiry,
+        };
+      });
+
+    res.json(formattedProducts);
   } catch (error) {
     next(error);
   }
