@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - v0.4.3
+
+### Added
+
+- Reports Module Implementation
+  - Reports data fetching hook with React Query integration
+  - Type-safe tables for low stock and expiring products
+  - Integration with existing stats system
+  - Reports page with tabbed interface
+  - Reuse of StatsCard component for metrics display
+
+### Changed
+
+- Updated routing configuration to include reports page
+- Enhanced type safety in data table implementations
+
+## [Unreleased] - v0.4.2
+
+### Added
+
+- Suppliers Management Module
+  - Suppliers data table with CRUD operations
+  - Supplier data fetching hooks (useAllSuppliers, useSuppliers)
+  - Supplier columns and filtering components
+- New UI Components
+  - Tabs component
+  - Error boundary components
+  - Enhanced error handling system
+- Product-Supplier Integration
+  - Updated product hooks for supplier selection
+  - Enhanced supplier selection in product forms
+
+### Changed
+
+- Updated dependencies and configurations
+- Enhanced routing configuration
+- Updated page layouts for better UX
+
+### Fixed
+
+- Product-supplier relationship handling
+- Form validation enhancements
+
 ## [Unreleased] - v0.4.1
 
 ### Added
