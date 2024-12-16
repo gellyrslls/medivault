@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { ProductForm } from "./product-form"
-import { useAddProduct } from "@/hooks/useProducts"
-import { useState } from "react"
-import { Plus } from "lucide-react"
+} from "@/components/ui/dialog";
+import { ProductForm } from "./product-form";
+import { useAddProduct } from "@/hooks/useProducts";
+import { useState } from "react";
+import { Plus } from "lucide-react";
 
 // Product type from useProducts hook
 type Product = {
@@ -21,30 +21,30 @@ type Product = {
   quantity: number;
   minStockLevel: number;
   price: number;
-  category: 'OTC' | 'PRESCRIPTION';
+  category: "OTC" | "PRESCRIPTION";
   expiryDate: Date;
   description?: string;
   supplierId: string;
-}
+};
 
 // Form data type
-type ProductFormData = Omit<Product, 'id'>;
+type ProductFormData = Omit<Product, "id">;
 
 interface ProductDialogProps {
   suppliers: { id: string; name: string }[];
 }
 
 export function AddProductDialog({ suppliers }: ProductDialogProps) {
-  const [open, setOpen] = useState(false)
-  const { mutateAsync: addProduct, isPending } = useAddProduct()
+  const [open, setOpen] = useState(false);
+  const { mutateAsync: addProduct, isPending } = useAddProduct();
 
   const handleSubmit = async (data: ProductFormData) => {
-    await addProduct(data)
-    setOpen(false)
-  }
+    await addProduct(data);
+    setOpen(false);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog modal={false} open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -55,14 +55,18 @@ export function AddProductDialog({ suppliers }: ProductDialogProps) {
         <DialogHeader>
           <DialogTitle>Add New Product</DialogTitle>
         </DialogHeader>
-        <ProductForm 
-          suppliers={suppliers}
-          onSubmit={handleSubmit}
-          isLoading={isPending}
-        />
+        <div className="z-0">
+          {" "}
+          {/* This z-index wrapper was key */}
+          <ProductForm
+            suppliers={suppliers}
+            onSubmit={handleSubmit}
+            isLoading={isPending}
+          />
+        </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 interface EditProductDialogProps {
@@ -73,36 +77,36 @@ interface EditProductDialogProps {
   isLoading?: boolean;
 }
 
-export function EditProductDialog({ 
+export function EditProductDialog({
   product,
   suppliers,
   onSubmit,
   trigger,
-  isLoading
+  isLoading,
 }: EditProductDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
   const handleSubmit = async (data: ProductFormData) => {
-    await onSubmit(data)
-    setOpen(false)
-  }
+    await onSubmit(data);
+    setOpen(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Product</DialogTitle>
         </DialogHeader>
-        <ProductForm 
-          initialData={product}
-          suppliers={suppliers}
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+        <div className="py-4">
+          <ProductForm
+            initialData={product}
+            suppliers={suppliers}
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+          />
+        </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

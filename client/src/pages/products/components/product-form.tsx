@@ -33,7 +33,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-// Zod schema for form validation
 const productFormSchema = z.object({
   name: z.string().min(2, {
     message: "Product name must be at least 2 characters.",
@@ -64,7 +63,6 @@ const productFormSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-// This can come from your API/Context
 interface Supplier {
   id: string;
   name: string;
@@ -242,14 +240,15 @@ export function ProductForm({
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant={"outline"}
+                        type="button"
+                        variant="outline"
                         className={cn(
                           "w-full pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP")
+                          format(field.value, "MMM dd, yyyy")
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -257,16 +256,45 @@ export function ProductForm({
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date(new Date().setHours(0, 0, 0, 0))
-                      }
-                      initialFocus
-                    />
+                  <PopoverContent
+                    className="z-50 w-auto p-0"
+                    align="start"
+                    side="bottom"
+                    sideOffset={5}
+                    onInteractOutside={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
+                    <div
+                      className="rounded-md border bg-popover"
+                      style={{ pointerEvents: "all" }}
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(date) => {
+                          console.log("Date selected:", date);
+                          field.onChange(date);
+                          // Simulate click outside to close popover
+                          const overlay = document.querySelector(
+                            "[data-radix-popper-content-wrapper]"
+                          )?.parentElement;
+                          if (overlay) {
+                            setTimeout(() => {
+                              const clickEvent = new MouseEvent("click", {
+                                bubbles: true,
+                                cancelable: true,
+                                view: window,
+                              });
+                              overlay.dispatchEvent(clickEvent);
+                            }, 100);
+                          }
+                        }}
+                        disabled={(date) => date < new Date()}
+                        defaultMonth={field.value}
+                        initialFocus
+                      />
+                    </div>
                   </PopoverContent>
                 </Popover>
                 <FormMessage />
