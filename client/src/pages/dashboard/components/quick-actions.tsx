@@ -10,8 +10,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { QuickProductForm } from "./forms/QuickProductForm";
-import { QuickStockUpdate } from "./forms/QuickStockUpdate";
+import { QuickProductForm } from "./forms/quick-product-form";
+import { QuickStockUpdate } from "./forms/quick-stock-update";
 
 interface ActionItem {
   title: string;

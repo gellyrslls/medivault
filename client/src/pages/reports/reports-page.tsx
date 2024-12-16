@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { useReports } from "@/hooks/useReports";
-import { StatsCard } from "@/pages/dashboard/components/StatsCard";
+import { StatsCard } from "@/pages/dashboard/components/stats-card";
 import { DataTable } from "./data-table";
 import { lowStockColumns, expiringColumns } from "./columns";
 import {

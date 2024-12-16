@@ -1,5 +1,5 @@
 import { Package, AlertTriangle, CalendarClock, Users } from "lucide-react";
-import { StatsCard } from "./StatsCard";
+import { StatsCard } from "./stats-card";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 
 export function StatsCards() {

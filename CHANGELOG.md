@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - v0.4.4
+
+### Fixed
+
+- Dashboard and Reports data synchronization
+  - Aligned expiring products calculation with product page logic
+  - Fixed incorrect stats display in dashboard and reports
+  - Improved data fetching and caching strategy
+- Authentication Implementation
+  - Corrected auth hooks implementation
+  - Fixed type declarations and removed redundant code
+  - Improved error handling in auth system
+- Query Invalidation
+  - Added proper cache invalidation for dashboard stats
+  - Enhanced data synchronization between modules
+
 ## [Unreleased] - v0.4.3
 
 ### Added

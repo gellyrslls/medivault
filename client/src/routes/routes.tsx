@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
-import LoginPage from "@/pages/auth/LoginPage";
-import RegisterPage from "@/pages/auth/RegisterPage";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import LoginPage from "@/pages/auth/login-page";
+import RegisterPage from "@/pages/auth/register-page";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import { ErrorBoundary } from "@/components/error/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -14,25 +14,25 @@ const Layout = lazy(() =>
 );
 
 const DashboardPage = lazy(() =>
-  import("@/pages/dashboard/DashboardPage").then((mod) => ({
+  import("@/pages/dashboard/dashboard-page").then((mod) => ({
     default: mod.default,
   }))
 );
 
 const ProductsPage = lazy(() =>
-  import("@/pages/products/ProductsPage").then((mod) => ({
+  import("@/pages/products/products-page").then((mod) => ({
     default: mod.default,
   }))
 );
 
 const SuppliersPage = lazy(() =>
-  import("@/pages/suppliers/SuppliersPage").then((mod) => ({
+  import("@/pages/suppliers/suppliers-page").then((mod) => ({
     default: mod.default,
   }))
 );
 
 const ReportsPage = lazy(() =>
-  import("@/pages/reports/ReportsPage").then((mod) => ({
+  import("@/pages/reports/reports-page").then((mod) => ({
     default: mod.default,
   }))
 );
