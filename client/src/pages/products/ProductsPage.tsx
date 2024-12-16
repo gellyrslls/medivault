@@ -1,6 +1,7 @@
 "use client";
 
 import { useProducts } from "@/hooks/useProducts";
+import { useAllSuppliers } from "@/hooks/useAllSuppliers";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,14 +15,9 @@ import { DeleteProductDialog } from "./components/delete-product-dialog";
 import { useState } from "react";
 import { Product } from "./columns";
 
-// Mock suppliers until we implement supplier management
-const mockSuppliers = [
-  { id: "1", name: "Supplier A" },
-  { id: "2", name: "Supplier B" },
-];
-
 export default function ProductsPage() {
-  const { data: products, isLoading, error } = useProducts();
+  const { data: products, isLoading: loadingProducts, error: productsError } = useProducts();
+  const { data: suppliers, isLoading: loadingSupplers } = useAllSuppliers();
 
   // Dialog states
   const [detailsDialog, setDetailsDialog] = useState<{
@@ -53,7 +49,7 @@ export default function ProductsPage() {
     product: null,
   });
 
-  if (error) {
+  if (productsError) {
     return (
       <div className="container mx-auto py-10">
         <Card className="p-6">
@@ -65,6 +61,11 @@ export default function ProductsPage() {
     );
   }
 
+  const formattedSuppliers = suppliers?.map(s => ({
+    id: s.id,
+    name: s.name
+  })) || [];
+
   return (
     <div className="container mx-auto py-10 space-y-4">
       <LowStockAlert />
@@ -72,10 +73,10 @@ export default function ProductsPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>Products</CardTitle>
-          <AddProductDialog suppliers={mockSuppliers} />
+          <AddProductDialog suppliers={formattedSuppliers} />
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {loadingProducts || loadingSupplers ? (
             <div className="space-y-3">
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
@@ -106,6 +107,7 @@ export default function ProductsPage() {
             setDetailsDialog((prev) => ({ ...prev, open }))
           }
           product={detailsDialog.product}
+          supplierName={formattedSuppliers.find(s => s.id === detailsDialog.product.supplierId)?.name || 'Unknown Supplier'}
           onEdit={() => {
             setDetailsDialog({ open: false, product: null });
             setEditDialog({ open: true, product: detailsDialog.product });
@@ -122,7 +124,7 @@ export default function ProductsPage() {
           open={editDialog.open}
           onOpenChange={(open) => setEditDialog((prev) => ({ ...prev, open }))}
           product={editDialog.product}
-          suppliers={mockSuppliers}
+          suppliers={formattedSuppliers}
         />
       )}
 

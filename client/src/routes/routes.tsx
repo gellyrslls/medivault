@@ -3,6 +3,8 @@ import { Suspense, lazy } from "react";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ErrorBoundary } from "@/components/error/error-boundary";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Using dynamic imports with type annotations for proper lazy loading
 const Layout = lazy(() =>
@@ -29,31 +31,63 @@ const SuppliersPage = lazy(() =>
   }))
 );
 
+function LoadingFallback() {
+  return (
+    <div className="p-4 space-y-4">
+      <Skeleton className="h-8 w-full max-w-sm" />
+      <Skeleton className="h-72 w-full" />
+    </div>
+  );
+}
+
 export function AppRoutes() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected routes */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/suppliers" element={<SuppliersPage />} />
-        </Route>
+          {/* Protected routes */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ErrorBoundary>
+                  <DashboardPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <ErrorBoundary>
+                  <ProductsPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/suppliers"
+              element={
+                <ErrorBoundary>
+                  <SuppliersPage />
+                </ErrorBoundary>
+              }
+            />
+          </Route>
 
-        {/* Catch all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
 }

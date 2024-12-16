@@ -15,8 +15,12 @@ interface Product {
   supplierId: string;
 }
 
+interface ProductDTO extends Omit<Product, 'expiryDate'> {
+  expiryDate: string;
+}
+
 interface ProductsResponse {
-  products: Product[];
+  products: ProductDTO[];
   totalPages: number;
   currentPage: number;
   total: number;
@@ -58,7 +62,11 @@ export function useProducts() {
     queryFn: async () => {
       try {
         const response = await api.get<ProductsResponse>("/products");
-        return response.products;
+        // Convert string dates to Date objects
+        return response.products.map(product => ({
+          ...product,
+          expiryDate: new Date(product.expiryDate)
+        }));
       } catch (error) {
         toast({
           variant: "destructive",
@@ -105,7 +113,11 @@ export function useUpdateProduct() {
     mutationFn: async (data: Product) => {
       const response = await api.put<ApiResponse<Product>>(
         `/products/${data.id}`,
-        data
+        {
+          ...data,
+          // Ensure we send the date in ISO format
+          expiryDate: data.expiryDate.toISOString()
+        }
       );
       return response;
     },
@@ -162,18 +174,14 @@ export function useDeleteProduct() {
   return useMutation({
     mutationFn: async (productId: string) => {
       await api.delete<void>(`/products/${productId}`);
-      return productId; // Return the ID for optimistic updates
+      return productId;
     },
     onMutate: async (productId: string) => {
-      // Cancel any outgoing queries
       await queryClient.cancelQueries({ queryKey: ["products"] });
-
-      // Save current state
       const previousProducts = queryClient.getQueryData<Product[]>([
         "products",
       ]);
 
-      // Optimistically update
       if (previousProducts) {
         queryClient.setQueryData<Product[]>(
           ["products"],
@@ -195,7 +203,6 @@ export function useDeleteProduct() {
       _variables: string,
       context: DeleteContext | undefined
     ) => {
-      // Revert optimistic update on error
       if (context?.previousProducts) {
         queryClient.setQueryData(["products"], context.previousProducts);
       }
