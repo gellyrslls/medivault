@@ -71,6 +71,7 @@ export function useAddSupplier() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       queryClient.invalidateQueries({ queryKey: ["suppliers.all"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
       toast({
         title: "Success",
         description: "Supplier added successfully",
@@ -80,7 +81,8 @@ export function useAddSupplier() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to add supplier. Please try again.",
+        description:
+          error.message || "Failed to add supplier. Please try again.",
       });
     },
   });
@@ -106,6 +108,7 @@ export function useUpdateSupplier() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       queryClient.invalidateQueries({ queryKey: ["suppliers.all"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
       toast({
         title: "Success",
         description: "Supplier updated successfully",
@@ -115,7 +118,8 @@ export function useUpdateSupplier() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to update supplier. Please try again.",
+        description:
+          error.message || "Failed to update supplier. Please try again.",
       });
     },
   });
@@ -133,7 +137,7 @@ export function useDeleteSupplier() {
     onMutate: async (supplierId) => {
       await queryClient.cancelQueries({ queryKey: ["suppliers"] });
       const previousSuppliers = queryClient.getQueryData<SuppliersResponse>([
-        "suppliers"
+        "suppliers",
       ]);
 
       if (previousSuppliers) {
@@ -150,12 +154,17 @@ export function useDeleteSupplier() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       queryClient.invalidateQueries({ queryKey: ["suppliers.all"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
       toast({
         title: "Success",
         description: "Supplier deleted successfully",
       });
     },
-    onError: (error: ApiError, _variables: string | number, context: DeleteContext | undefined) => {
+    onError: (
+      error: ApiError,
+      _variables: string | number,
+      context: DeleteContext | undefined
+    ) => {
       if (context?.previousSuppliers) {
         queryClient.setQueryData(["suppliers"], context.previousSuppliers);
       }
@@ -165,13 +174,15 @@ export function useDeleteSupplier() {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Cannot delete supplier with associated products. Remove all products first.",
+          description:
+            "Cannot delete supplier with associated products. Remove all products first.",
         });
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: error.message || "Failed to delete supplier. Please try again.",
+          description:
+            error.message || "Failed to delete supplier. Please try again.",
         });
       }
     },

@@ -15,7 +15,7 @@ interface Product {
   supplierId: string;
 }
 
-interface ProductDTO extends Omit<Product, 'expiryDate'> {
+interface ProductDTO extends Omit<Product, "expiryDate"> {
   expiryDate: string;
 }
 
@@ -63,9 +63,9 @@ export function useProducts() {
       try {
         const response = await api.get<ProductsResponse>("/products");
         // Convert string dates to Date objects
-        return response.products.map(product => ({
+        return response.products.map((product) => ({
           ...product,
-          expiryDate: new Date(product.expiryDate)
+          expiryDate: new Date(product.expiryDate),
         }));
       } catch (error) {
         toast({
@@ -89,7 +89,9 @@ export function useAddProduct() {
       return response;
     },
     onSuccess: () => {
+      // Invalidate both products and dashboard stats
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
       toast({
         title: "Success",
         description: "Product added successfully",
@@ -116,13 +118,14 @@ export function useUpdateProduct() {
         {
           ...data,
           // Ensure we send the date in ISO format
-          expiryDate: data.expiryDate.toISOString()
+          expiryDate: data.expiryDate.toISOString(),
         }
       );
       return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
       toast({
         title: "Success",
         description: "Product updated successfully",
@@ -152,6 +155,7 @@ export function useUpdateStock() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
       toast({
         title: "Success",
         description: "Stock updated successfully",
@@ -193,6 +197,7 @@ export function useDeleteProduct() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
       toast({
         title: "Success",
         description: "Product deleted successfully",
