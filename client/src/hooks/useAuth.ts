@@ -1,21 +1,44 @@
-import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from '@/context/AuthContext';
+import { useCallback } from "react";
+import { useAuth as useAuthContext } from "@/context/auth";
+import { api } from "@/lib/api";
+
+interface Credentials {
+  email: string;
+  password: string;
+}
+
+interface AuthResponse {
+  token: string;
+  user: {
+    id: number;
+    email: string;
+  };
+}
 
 export function useAuth() {
-  const navigate = useNavigate();
-  const { user, logout: contextLogout } = useAuthContext();
+  const { login: contextLogin, register: contextRegister, logout: contextLogout } = useAuthContext();
 
-  const logout = async () => {
-    try {
-      await contextLogout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
+  const login = useCallback(
+    async (credentials: Credentials) => {
+      const data = await api.post<AuthResponse>("/auth/login", credentials);
+      await contextLogin(credentials.email, credentials.password);
+      return data;
+    },
+    [contextLogin]
+  );
 
-  return {
-    user,
-    logout,
-  };
+  const register = useCallback(
+    async (credentials: Credentials) => {
+      const data = await api.post<AuthResponse>("/auth/register", credentials);
+      await contextRegister(credentials.email, credentials.password);
+      return data;
+    },
+    [contextRegister]
+  );
+
+  const logout = useCallback(() => {
+    contextLogout();
+  }, [contextLogout]);
+
+  return { login, register, logout };
 }
