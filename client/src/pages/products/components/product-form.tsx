@@ -55,9 +55,9 @@ const productFormSchema = z.object({
   expiryDate: z.date({
     required_error: "Expiry date is required.",
   }),
-  supplierId: z.string().min(1, {
-    message: "Please select a supplier.",
-  }),
+  supplierId: z
+    .union([z.string(), z.number()])
+    .transform((val) => (typeof val === "string" ? val : val.toString())),
   description: z.string().optional(),
 });
 
@@ -82,18 +82,26 @@ export function ProductForm({
   isLoading,
 }: ProductFormProps) {
   const { toast } = useToast();
+
+  const transformedInitialData = {
+    ...initialData,
+    supplierId: initialData?.supplierId
+      ? initialData.supplierId.toString()
+      : "",
+  };
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-      name: initialData?.name || "",
-      sku: initialData?.sku || "",
-      category: initialData?.category || "OTC",
-      quantity: initialData?.quantity || 0,
-      minStockLevel: initialData?.minStockLevel || 0,
-      price: initialData?.price || 0,
-      expiryDate: initialData?.expiryDate || new Date(),
-      supplierId: initialData?.supplierId || "",
-      description: initialData?.description || "",
+      name: transformedInitialData?.name || "",
+      sku: transformedInitialData?.sku || "",
+      category: transformedInitialData?.category || "OTC",
+      quantity: transformedInitialData?.quantity || 0,
+      price: transformedInitialData?.price || 0,
+      minStockLevel: transformedInitialData?.minStockLevel || 0,
+      expiryDate: transformedInitialData?.expiryDate || new Date(),
+      description: transformedInitialData?.description || "",
+      supplierId: transformedInitialData?.supplierId || "",
     },
   });
 
@@ -310,16 +318,19 @@ export function ProductForm({
                 <FormLabel>Supplier</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value?.toString() || ""} // Ensure value is string
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select supplier" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {suppliers.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
+                      <SelectItem
+                        key={supplier.id}
+                        value={supplier.id.toString()}
+                      >
                         {supplier.name}
                       </SelectItem>
                     ))}

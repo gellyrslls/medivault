@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated routing configuration to include reports page
 - Enhanced type safety in data table implementations
 
+### Fixed
+
+- Date picker interaction in product form (now allows selecting dates and changing months)
+- Improved z-index handling for calendar popover in dialog
+
 ## [Unreleased] - v0.4.2
 
 ### Added
