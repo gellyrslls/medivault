@@ -31,6 +31,12 @@ const SuppliersPage = lazy(() =>
   }))
 );
 
+const ReportsPage = lazy(() =>
+  import("@/pages/reports/ReportsPage").then((mod) => ({
+    default: mod.default,
+  }))
+);
+
 function LoadingFallback() {
   return (
     <div className="p-4 space-y-4">
@@ -79,6 +85,14 @@ export function AppRoutes() {
               element={
                 <ErrorBoundary>
                   <SuppliersPage />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ErrorBoundary>
+                  <ReportsPage />
                 </ErrorBoundary>
               }
             />
