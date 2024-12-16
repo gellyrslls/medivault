@@ -3,12 +3,12 @@
 import * as React from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faCapsules,
   faGaugeHigh,
   faBoxesStacked,
   faUsers,
   faFileLines,
   faGear,
+  faFilePrescription
 } from "@fortawesome/free-solid-svg-icons"
 import { useAuth } from "@/context/auth/hooks"
 import { NavUser } from "./nav-user"
@@ -42,7 +42,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // Set sidebar to be initially closed
   React.useEffect(() => {
     setOpen(false)
-  }, [setOpen]) // Added setOpen to dependency array
+  }, [setOpen])
 
   return (
     <Sidebar
@@ -59,12 +59,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-                <div className="flex w-full items-center"> {/* Changed from anchor to div */}
+                <div className="flex w-full items-center">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <FontAwesomeIcon icon={faCapsules} className="size-4" />
+                    <FontAwesomeIcon icon={faFilePrescription} className="size-4" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Pharmacy App</span>
+                    <span className="truncate font-semibold">Medivault</span>
                     <span className="truncate text-xs">Management</span>
                   </div>
                 </div>
