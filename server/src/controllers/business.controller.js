@@ -134,8 +134,10 @@ export const checkProfileStatus = asyncHandler(async (req, res) => {
 
   const businessProfile = await prisma.businessProfile.findUnique({
     where: { userId },
-    select: { id: true },
   });
 
-  res.json({ isSetup: !!businessProfile });
+  res.json({
+    isSetup: !!businessProfile,
+    profile: businessProfile, // Include the full profile
+  });
 });
