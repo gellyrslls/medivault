@@ -21,7 +21,13 @@ export const getSuppliers = asyncHandler(async (req, res) => {
     },
   });
 
-  res.json(suppliers);
+  // Format response to match frontend expectations
+  res.json({
+    suppliers,
+    total: suppliers.length,
+    currentPage: 1,
+    totalPages: 1,
+  });
 });
 
 // @desc    Get single supplier
