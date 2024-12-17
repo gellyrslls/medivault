@@ -62,17 +62,27 @@ export function useProducts() {
     queryFn: async () => {
       try {
         const response = await api.get<ProductsResponse>("/products");
+        // If no products, return empty array instead of throwing error
+        if (!response.products) return [];
+
         // Convert string dates to Date objects
         return response.products.map((product) => ({
           ...product,
           expiryDate: new Date(product.expiryDate),
         }));
       } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to fetch products. Please try again.",
-        });
+        // Only show error toast if it's not a 404 (no products found)
+        if (error instanceof Error && !error.message.includes("404")) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to fetch products. Please try again.",
+          });
+        }
+        // Return empty array for 404s
+        if (error instanceof Error && error.message.includes("404")) {
+          return [];
+        }
         throw error;
       }
     },

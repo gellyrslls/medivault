@@ -14,6 +14,7 @@ import { StockDialog } from "./components/stock-dialog";
 import { DeleteProductDialog } from "./components/delete-product-dialog";
 import { useState } from "react";
 import { Product } from "./columns";
+import { PackageX } from "lucide-react";
 
 export default function ProductsPage() {
   const {
@@ -71,13 +72,28 @@ export default function ProductsPage() {
       name: s.name,
     })) || [];
 
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
+      <PackageX className="h-12 w-12 mb-4" />
+      <h3 className="text-lg font-medium mb-2">No products found</h3>
+      <p>Add your first product to get started.</p>
+    </div>
+  );
+
   return (
     <div className="container mx-auto py-10 space-y-4">
       <LowStockAlert />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle>Products</CardTitle>
+          <div className="space-y-1">
+            <CardTitle>Products</CardTitle>
+            {products && (
+              <p className="text-sm text-muted-foreground">
+                Total {products.length} product{products.length === 1 ? "" : "s"}
+              </p>
+            )}
+          </div>
           <AddProductDialog suppliers={formattedSuppliers} />
         </CardHeader>
         <CardContent>
@@ -88,6 +104,8 @@ export default function ProductsPage() {
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
             </div>
+          ) : products && products.length === 0 ? (
+            <EmptyState />
           ) : (
             <DataTable
               columns={columns({
