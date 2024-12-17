@@ -21,9 +21,16 @@ export const getProducts = asyncHandler(async (req, res) => {
     },
   });
 
-  res.json(products);
+  // Format response to match frontend expectations
+  res.json({
+    products,
+    total: products.length,
+    currentPage: 1,
+    totalPages: 1,
+  });
 });
 
+// The rest of the controller remains the same...
 // @desc    Get single product
 // @route   GET /api/products/:id
 // @access  Private
