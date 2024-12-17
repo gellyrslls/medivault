@@ -6,6 +6,7 @@ import { useReports } from "@/hooks/useReports";
 import { StatsCard } from "@/pages/dashboard/components/stats-card";
 import { DataTable } from "./data-table";
 import { lowStockColumns, expiringColumns } from "./columns";
+import ExportButton from "./components/export-button";
 import {
   Package,
   AlertTriangle as AlertIcon,
@@ -82,8 +83,13 @@ export default function ReportsPage() {
 
         <TabsContent value="low-stock">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Low Stock Products</CardTitle>
+              <ExportButton
+                data={data?.lowStock ?? []}
+                filename="low_stock_report"
+                disabled={isLoading}
+              />
             </CardHeader>
             <CardContent>
               <DataTable
@@ -96,8 +102,13 @@ export default function ReportsPage() {
 
         <TabsContent value="expiring">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Products Expiring Soon</CardTitle>
+              <ExportButton
+                data={data?.expiringProducts ?? []}
+                filename="expiring_products_report"
+                disabled={isLoading}
+              />
             </CardHeader>
             <CardContent>
               <DataTable
