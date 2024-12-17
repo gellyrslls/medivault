@@ -8,7 +8,7 @@ import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import supplierRoutes from "./routes/supplier.routes.js";
 import reportsRoutes from "./routes/reports.routes.js";
-import prisma from "./utils/prisma.js";
+import businessRoutes from "./routes/business.routes.js";
 
 dotenv.config();
 
@@ -21,6 +21,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/business", businessRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/reports", reportsRoutes);
