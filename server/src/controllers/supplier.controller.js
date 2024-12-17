@@ -1,5 +1,6 @@
 import prisma from "../utils/prisma.js";
 import asyncHandler from "express-async-handler";
+import { logActivity } from "../utils/activity.js";
 
 // @desc    Get all suppliers for business
 // @route   GET /api/suppliers
@@ -21,7 +22,6 @@ export const getSuppliers = asyncHandler(async (req, res) => {
     },
   });
 
-  // Format response to match frontend expectations
   res.json({
     suppliers,
     total: suppliers.length,
@@ -82,6 +82,15 @@ export const createSupplier = asyncHandler(async (req, res) => {
     },
   });
 
+  // Log activity
+  await logActivity(
+    businessProfile.id,
+    "added",
+    "supplier",
+    supplier.id,
+    `Added new supplier: ${name}`
+  );
+
   res.status(201).json(supplier);
 });
 
@@ -122,6 +131,15 @@ export const updateSupplier = asyncHandler(async (req, res) => {
       phone,
     },
   });
+
+  // Log activity
+  await logActivity(
+    businessProfile.id,
+    "updated",
+    "supplier",
+    supplier.id,
+    `Updated supplier: ${name || existingSupplier.name}`
+  );
 
   res.json(supplier);
 });
@@ -165,6 +183,15 @@ export const deleteSupplier = asyncHandler(async (req, res) => {
       id: parseInt(id),
     },
   });
+
+  // Log activity
+  await logActivity(
+    businessProfile.id,
+    "deleted",
+    "supplier",
+    parseInt(id),
+    `Deleted supplier: ${supplier.name}`
+  );
 
   res.json({ message: "Supplier deleted" });
 });

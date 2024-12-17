@@ -1,5 +1,6 @@
 import prisma from "../utils/prisma.js";
 import asyncHandler from "express-async-handler";
+import { logActivity } from "../utils/activity.js";
 
 // @desc    Get all products for business
 // @route   GET /api/products
@@ -21,7 +22,6 @@ export const getProducts = asyncHandler(async (req, res) => {
     },
   });
 
-  // Format response to match frontend expectations
   res.json({
     products,
     total: products.length,
@@ -30,7 +30,6 @@ export const getProducts = asyncHandler(async (req, res) => {
   });
 });
 
-// The rest of the controller remains the same...
 // @desc    Get single product
 // @route   GET /api/products/:id
 // @access  Private
@@ -111,6 +110,15 @@ export const createProduct = asyncHandler(async (req, res) => {
     },
   });
 
+  // Log activity
+  await logActivity(
+    businessProfile.id,
+    "added",
+    "product",
+    product.id,
+    `Added new product: ${name}`
+  );
+
   res.status(201).json(product);
 });
 
@@ -182,6 +190,15 @@ export const updateProduct = asyncHandler(async (req, res) => {
     },
   });
 
+  // Log activity
+  await logActivity(
+    businessProfile.id,
+    "updated",
+    "product",
+    product.id,
+    `Updated product: ${name || existingProduct.name}`
+  );
+
   res.json(product);
 });
 
@@ -215,6 +232,15 @@ export const deleteProduct = asyncHandler(async (req, res) => {
       id: parseInt(id),
     },
   });
+
+  // Log activity
+  await logActivity(
+    businessProfile.id,
+    "deleted",
+    "product",
+    parseInt(id),
+    `Deleted product: ${product.name}`
+  );
 
   res.json({ message: "Product deleted" });
 });
@@ -279,6 +305,15 @@ export const updateStock = asyncHandler(async (req, res) => {
       quantity: parseInt(quantity),
     },
   });
+
+  // Log activity
+  await logActivity(
+    businessProfile.id,
+    "updated",
+    "product",
+    product.id,
+    `Updated stock level for ${product.name} to ${quantity}`
+  );
 
   res.json(product);
 });
