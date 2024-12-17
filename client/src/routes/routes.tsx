@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // Using dynamic imports with type annotations for proper lazy loading
 const Layout = lazy(() =>
-  import("@/components/layout/Layout").then((mod) => ({
+  import("@/components/layout/layout").then((mod) => ({
     default: mod.Layout,
   }))
 );
@@ -37,6 +37,12 @@ const ReportsPage = lazy(() =>
   }))
 );
 
+const BusinessSetupPage = lazy(() =>
+  import("@/pages/business-setup/business-setup-page").then((mod) => ({
+    default: mod.default,
+  }))
+);
+
 function LoadingFallback() {
   return (
     <div className="p-4 space-y-4">
@@ -54,6 +60,18 @@ export function AppRoutes() {
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+
+          {/* Business Setup - Protected but outside main layout */}
+          <Route
+            path="/business-setup"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <BusinessSetupPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected routes */}
           <Route
