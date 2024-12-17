@@ -1,112 +1,123 @@
-import { ReactNode, useEffect, useState } from "react";
-import { AuthContext } from "./context";
-import { client } from "@/lib/api";
+import { useReducer, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { AuthContext } from "./AuthContext";
+import { authReducer } from "./authReducer";
+import { api } from "@/lib/api";
+import type { LoginCredentials, RegisterCredentials, User } from "@/types";
 
-interface User {
-  id: number;
-  email: string;
-}
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-interface LoginResponse {
-  user: User;
+interface AuthResponse {
+  user: {
+    id: number;
+    email: string;
+    createdAt: string;
+    updatedAt: string;
+  };
   token: string;
 }
 
-interface RegisterResponse {
-  user: User;
-  token: string;
-}
+const initialState = {
+  user: null,
+  token: localStorage.getItem("token"),
+  isAuthenticated: Boolean(localStorage.getItem("token")),
+  isLoading: false,
+};
 
-export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(authReducer, initialState);
+  const { toast } = useToast();
 
-  // Function to check auth status
-  const checkAuth = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setUser(null);
-        return;
+  const login = useCallback(
+    async (credentials: LoginCredentials) => {
+      try {
+        dispatch({ type: "AUTH_START" });
+
+        const response = await api.post<AuthResponse>(
+          "/auth/login",
+          credentials
+        );
+
+        // Make sure the response matches the User type
+        const user: User = {
+          id: response.user.id,
+          email: response.user.email,
+          createdAt: response.user.createdAt,
+          updatedAt: response.user.updatedAt,
+        };
+
+        localStorage.setItem("token", response.token);
+        dispatch({
+          type: "AUTH_SUCCESS",
+          payload: { user, token: response.token },
+        });
+      } catch (error) {
+        dispatch({ type: "AUTH_ERROR" });
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description:
+            error instanceof Error ? error.message : "Unable to login",
+        });
+        throw error;
       }
+    },
+    [toast]
+  );
 
-      // Try to get user profile
-      const response = await client<User>("/auth/profile");
-      setUser(response);
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      // Clear invalid token
-      localStorage.removeItem("token");
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const register = useCallback(
+    async (credentials: RegisterCredentials) => {
+      try {
+        dispatch({ type: "AUTH_START" });
 
-  // Check auth status when component mounts
-  useEffect(() => {
-    checkAuth();
-  }, []);
+        const response = await api.post<AuthResponse>(
+          "/auth/register",
+          credentials
+        );
 
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await client<LoginResponse>("/auth/login", {
-        method: "POST",
-        body: { email, password },
-      });
+        // Make sure the response matches the User type
+        const user: User = {
+          id: response.user.id,
+          email: response.user.email,
+          createdAt: response.user.createdAt,
+          updatedAt: response.user.updatedAt,
+        };
 
-      localStorage.setItem("token", response.token);
-      setUser(response.user);
-      return { success: true };
-    } catch (error) {
-      console.error("Login failed:", error);
-      return {
-        success: false,
-        error: {
-          message: error instanceof Error ? error.message : "Login failed",
-        },
-      };
-    }
-  };
+        localStorage.setItem("token", response.token);
+        dispatch({
+          type: "AUTH_SUCCESS",
+          payload: { user, token: response.token },
+        });
+      } catch (error) {
+        dispatch({ type: "AUTH_ERROR" });
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description:
+            error instanceof Error ? error.message : "Unable to register",
+        });
+        throw error;
+      }
+    },
+    [toast]
+  );
 
-  const register = async (email: string, password: string) => {
-    try {
-      const response = await client<RegisterResponse>("/auth/register", {
-        method: "POST",
-        body: { email, password },
-      });
-
-      localStorage.setItem("token", response.token);
-      setUser(response.user);
-      return { success: true };
-    } catch (error) {
-      console.error("Registration failed:", error);
-      return {
-        success: false,
-        error: {
-          message:
-            error instanceof Error ? error.message : "Registration failed",
-        },
-      };
-    }
-  };
-
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem("token");
-    setUser(null);
-  };
+    dispatch({ type: "LOGOUT" });
+    toast({
+      description: "Successfully logged out",
+    });
+  }, [toast]);
 
-  const value = {
-    user,
-    loading,
-    login,
-    logout,
-    register,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        ...state,
+        login,
+        register,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }

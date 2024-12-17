@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/context/auth/hooks";
+import { useAuth } from "@/context/auth";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import {
@@ -30,7 +30,7 @@ interface AuthFormProps {
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -65,34 +65,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
 
   const handleSubmit = async (values: FormValues) => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       if (mode === "login") {
-        const result = await login(values.email, values.password);
-        if (result.success) {
-          navigate("/dashboard");
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: result.error?.message || "Login failed",
-          });
-        }
+        await login({ email: values.email, password: values.password });
+        navigate("/dashboard");
       } else {
-        // Handle register
         const registerValues = values as z.infer<typeof registerSchema>;
-        const result = await register(
-          registerValues.email,
-          registerValues.password
-        );
-        if (result.success) {
-          navigate("/dashboard");
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: result.error?.message || "Registration failed",
-          });
-        }
+        await register({
+          email: registerValues.email,
+          password: registerValues.password,
+          confirmPassword: registerValues.confirmPassword,
+        });
+        navigate("/dashboard");
       }
     } catch (error) {
       toast({
@@ -102,7 +86,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
           error instanceof Error ? error.message : "Authentication failed",
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -133,7 +117,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
                     <Input
                       placeholder="m@example.com"
                       type="email"
-                      disabled={isLoading}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -148,7 +132,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" disabled={isLoading} {...field} />
+                    <Input type="password" disabled={loading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -162,7 +146,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input type="password" disabled={isLoading} {...field} />
+                      <Input type="password" disabled={loading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -172,9 +156,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
             <Button
               type="submit"
               className="w-full bg-neutral-900 text-white"
-              disabled={isLoading}
+              disabled={loading}
             >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === "login" ? "Sign in" : "Create account"}
             </Button>
           </form>
@@ -189,7 +173,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
                 variant="link"
                 className="px-0"
                 onClick={() => navigate("/register")}
-                disabled={isLoading}
+                disabled={loading}
               >
                 Sign up
               </Button>
@@ -201,7 +185,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
                 variant="link"
                 className="px-0"
                 onClick={() => navigate("/login")}
-                disabled={isLoading}
+                disabled={loading}
               >
                 Sign in
               </Button>
