@@ -28,11 +28,27 @@ model BusinessProfile {
   userId        Int       @unique
   products      Product[]
   suppliers     Supplier[]
+  activities    Activity[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   @@index([name])
   @@index([email])
+}
+
+model Activity {
+  id          Int             @id @default(autoincrement())
+  action      String         // "added", "updated", "deleted"
+  entityType  String         // "product", "supplier"
+  entityId    Int
+  details     String?
+  businessId  Int
+  business    BusinessProfile @relation(fields: [businessId], references: [id])
+  createdAt   DateTime       @default(now())
+
+  @@index([businessId])
+  @@index([createdAt])
+  @@index([entityType])
 }
 
 model Product {
@@ -57,6 +73,7 @@ model Product {
   @@index([quantity])
   @@index([name])
   @@index([sku])
+  @@index([businessId])
 }
 
 model Supplier {
@@ -73,6 +90,7 @@ model Supplier {
 
   @@index([name])
   @@index([email])
+  @@index([businessId])
 }
 
 enum Category {
