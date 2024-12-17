@@ -8,33 +8,38 @@ interface ProtectedRouteProps {
   requireBusinessSetup?: boolean;
 }
 
+function LoadingState() {
+  return (
+    <div className="w-full h-screen flex items-center justify-center">
+      <div className="space-y-4 w-full max-w-md px-4">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-3/4" />
+        <Skeleton className="h-8 w-1/2" />
+      </div>
+    </div>
+  );
+}
+
 export function ProtectedRoute({
   children,
   requireBusinessSetup = true,
 }: ProtectedRouteProps) {
   const { user, isLoading: authLoading } = useAuth();
-  const { isBusinessSetup, isLoading: businessLoading } = useBusiness();
+  const {
+    isBusinessSetup,
+    businessProfile,
+    isLoading: businessLoading,
+  } = useBusiness();
   const location = useLocation();
 
-  // Show loading state while checking auth or business status
-  if (authLoading || businessLoading) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <div className="space-y-4 w-full max-w-md px-4">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-8 w-1/2" />
-        </div>
-      </div>
-    );
+  if (authLoading || (user && businessLoading)) {
+    return <LoadingState />;
   }
 
-  // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Handle business setup requirement
   if (
     requireBusinessSetup &&
     !isBusinessSetup &&
@@ -43,8 +48,11 @@ export function ProtectedRoute({
     return <Navigate to="/business-setup" state={{ from: location }} replace />;
   }
 
-  // Redirect to dashboard if trying to access business setup when already set up
-  if (isBusinessSetup && location.pathname === "/business-setup") {
+  if (
+    location.pathname === "/business-setup" &&
+    isBusinessSetup &&
+    businessProfile
+  ) {
     return <Navigate to="/dashboard" replace />;
   }
 
