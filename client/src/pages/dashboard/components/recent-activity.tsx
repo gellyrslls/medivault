@@ -2,36 +2,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Package,
+  Users,
+  Trash,
+  PenLine,
   AlertTriangle,
-  CalendarClock,
-  ArrowUpDown,
+  PlusCircle,
 } from "lucide-react";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { cn } from "@/lib/utils";
-
-interface Activity {
-  id: string;
-  type: "stock_update" | "new_product" | "low_stock" | "expired";
-  description: string;
-  timestamp: Date;
-  status?: string;
-}
+import { Activity } from "@/types/activity";
+import { format } from "date-fns";
 
 interface RecentActivityProps {
   className?: string;
 }
 
-const getActivityIcon = (type: Activity["type"]) => {
-  switch (type) {
-    case "stock_update":
-      return <ArrowUpDown className="h-4 w-4" />;
-    case "new_product":
-      return <Package className="h-4 w-4" />;
-    case "low_stock":
-      return <AlertTriangle className="h-4 w-4 text-destructive" />;
-    case "expired":
-      return <CalendarClock className="h-4 w-4 text-destructive" />;
-  }
+const getActionIcon = (action: Activity["action"]) => {
+  if (action === "added")
+    return <PlusCircle className="h-4 w-4 text-green-500" />;
+  if (action === "deleted")
+    return <Trash className="h-4 w-4 text-destructive" />;
+  return <PenLine className="h-4 w-4 text-blue-500" />;
+};
+
+const getEntityIcon = (entityType: Activity["entityType"]) => {
+  if (entityType === "product") return <Package className="h-4 w-4" />;
+  return <Users className="h-4 w-4" />;
 };
 
 function ActivitySkeleton() {
@@ -44,7 +40,6 @@ function ActivitySkeleton() {
         </div>
         <Skeleton className="h-3 w-32" />
       </div>
-      <Skeleton className="ml-auto h-4 w-16" />
     </div>
   );
 }
@@ -63,7 +58,6 @@ export function RecentActivity({ className }: RecentActivityProps) {
         <div className="space-y-8">
           {isLoading ? (
             <>
-              <ActivitySkeleton />
               <ActivitySkeleton />
               <ActivitySkeleton />
               <ActivitySkeleton />
@@ -87,21 +81,19 @@ export function RecentActivity({ className }: RecentActivityProps) {
             </div>
           ) : (
             activities?.map((activity) => (
-              <div key={activity.id} className="flex items-center">
+              <div key={activity.id} className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  {getActionIcon(activity.action)}
+                  {getEntityIcon(activity.entityType)}
+                </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    {getActivityIcon(activity.type)}
-                    <p className="text-sm font-medium leading-none">
-                      {activity.description}
-                    </p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(activity.timestamp).toLocaleString()}
+                  <p className="text-sm font-medium leading-none">
+                    {activity.details}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(activity.createdAt), "MMM dd, yyyy HH:mm")}
                   </p>
                 </div>
-                {activity.status && (
-                  <div className="ml-auto font-medium">{activity.status}</div>
-                )}
               </div>
             ))
           )}
