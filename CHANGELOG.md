@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - v0.4.5
+
+### Added
+
+- Business Profile Implementation
+  - Added business profile database schema and migrations
+  - Created business profile API endpoints
+  - Implemented validation and error handling
+  - Added business profile middleware
+  - Enhanced authentication flow with business profile checks
+
+### Changed
+
+- Updated server configuration for better module handling
+- Enhanced error handling with express-async-handler
+- Improved API routing structure
+
+### Fixed
+
+- Server startup configuration
+- Module imports in index.js
+- Prisma client initialization
+
 ## [Unreleased] - v0.4.4
 
 ### Fixed
