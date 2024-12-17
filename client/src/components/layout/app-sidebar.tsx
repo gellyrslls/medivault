@@ -10,7 +10,7 @@ import {
   faGear,
   faFilePrescription
 } from "@fortawesome/free-solid-svg-icons"
-import { useAuth } from "@/context/auth/hooks"
+import { useAuth } from "@/context/auth/useAuth"
 import { NavUser } from "./nav-user"
 import {
   Sidebar,
