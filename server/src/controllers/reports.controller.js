@@ -9,8 +9,14 @@ const isExpiringSoon = (expiryDate) => {
 
 export const getLowStockProducts = async (req, res, next) => {
   try {
+    const { businessProfile } = req.user;
+    if (!businessProfile) {
+      throw new ApiError(400, "Business profile not found");
+    }
+
     const products = await prisma.product.findMany({
       where: {
+        businessId: businessProfile.id,
         quantity: {
           lte: prisma.product.fields.minStockLevel,
         },
@@ -20,9 +26,9 @@ export const getLowStockProducts = async (req, res, next) => {
       },
     });
 
-    const formattedProducts = products.map(product => ({
+    const formattedProducts = products.map((product) => ({
       ...product,
-      id: Number(product.id)
+      id: Number(product.id),
     }));
 
     res.json(formattedProducts);
@@ -33,18 +39,33 @@ export const getLowStockProducts = async (req, res, next) => {
 
 export const getInventoryStatus = async (req, res, next) => {
   try {
+    const { businessProfile } = req.user;
+    if (!businessProfile) {
+      throw new ApiError(400, "Business profile not found");
+    }
+
     const products = await prisma.product.findMany({
+      where: {
+        businessId: businessProfile.id,
+      },
       include: {
         supplier: true,
       },
     });
 
-    const lowStock = products.filter(product => 
-      product.quantity <= product.minStockLevel
+    const lowStock = products.filter(
+      (product) => product.quantity <= product.minStockLevel
     );
 
-    const expiringProducts = products.filter(product => isExpiringSoon(product.expiryDate));
-    const suppliersCount = await prisma.supplier.count();
+    const expiringProducts = products.filter((product) =>
+      isExpiringSoon(product.expiryDate)
+    );
+
+    const suppliersCount = await prisma.supplier.count({
+      where: {
+        businessId: businessProfile.id,
+      },
+    });
 
     const totalProducts = products.length;
     const totalValue = products.reduce(
@@ -67,24 +88,32 @@ export const getInventoryStatus = async (req, res, next) => {
 
 export const getExpiringProducts = async (req, res, next) => {
   try {
+    const { businessProfile } = req.user;
+    if (!businessProfile) {
+      throw new ApiError(400, "Business profile not found");
+    }
+
     const products = await prisma.product.findMany({
+      where: {
+        businessId: businessProfile.id,
+      },
       include: {
         supplier: true,
       },
       orderBy: {
-        expiryDate: 'asc',
+        expiryDate: "asc",
       },
     });
 
     // Filter and format expiring products
     const formattedProducts = products
-      .filter(product => isExpiringSoon(product.expiryDate))
-      .map(product => {
+      .filter((product) => isExpiringSoon(product.expiryDate))
+      .map((product) => {
         const expiryDate = new Date(product.expiryDate);
         const daysUntilExpiry = Math.ceil(
           (expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
         );
-        
+
         return {
           ...product,
           id: Number(product.id),
@@ -93,6 +122,30 @@ export const getExpiringProducts = async (req, res, next) => {
       });
 
     res.json(formattedProducts);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// New endpoint for recent activities
+export const getRecentActivities = async (req, res, next) => {
+  try {
+    const { businessProfile } = req.user;
+    if (!businessProfile) {
+      throw new ApiError(400, "Business profile not found");
+    }
+
+    const activities = await prisma.activity.findMany({
+      where: {
+        businessId: businessProfile.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 5, // Limit to 5 most recent activities
+    });
+
+    res.json(activities);
   } catch (error) {
     next(error);
   }
