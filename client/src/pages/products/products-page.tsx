@@ -16,7 +16,11 @@ import { useState } from "react";
 import { Product } from "./columns";
 
 export default function ProductsPage() {
-  const { data: products, isLoading: loadingProducts, error: productsError } = useProducts();
+  const {
+    data: products,
+    isLoading: loadingProducts,
+    error: productsError,
+  } = useProducts();
   const { data: suppliers, isLoading: loadingSupplers } = useAllSuppliers();
 
   // Dialog states
@@ -61,10 +65,11 @@ export default function ProductsPage() {
     );
   }
 
-  const formattedSuppliers = suppliers?.map(s => ({
-    id: s.id,
-    name: s.name
-  })) || [];
+  const formattedSuppliers =
+    suppliers?.map((s) => ({
+      id: s.id,
+      name: s.name,
+    })) || [];
 
   return (
     <div className="container mx-auto py-10 space-y-4">
@@ -107,7 +112,11 @@ export default function ProductsPage() {
             setDetailsDialog((prev) => ({ ...prev, open }))
           }
           product={detailsDialog.product}
-          supplierName={formattedSuppliers.find(s => s.id === detailsDialog.product.supplierId)?.name || 'Unknown Supplier'}
+          supplierName={
+            formattedSuppliers.find(
+              (s) => s.id === detailsDialog.product.supplierId
+            )?.name || "Unknown Supplier"
+          }
           onEdit={() => {
             setDetailsDialog({ open: false, product: null });
             setEditDialog({ open: true, product: detailsDialog.product });

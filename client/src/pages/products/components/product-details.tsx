@@ -27,6 +27,7 @@ interface ProductDetailsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product;
+  supplierName: string;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -35,6 +36,7 @@ export function ProductDetails({
   open,
   onOpenChange,
   product,
+  supplierName,
   onEdit,
   onDelete,
 }: ProductDetailsProps) {
@@ -165,9 +167,9 @@ export function ProductDetails({
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
-                    Supplier ID
+                    Supplier
                   </p>
-                  <p>{product.supplierId}</p>
+                  <p>{supplierName}</p>
                 </div>
               </div>
             </CardContent>
