@@ -29,7 +29,7 @@ export const protect = async (req, res, next) => {
     }
 
     // Attach user to request
-    req.user = decoded;
+    req.user = user;  // Attach the actual user object instead of decoded token
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
