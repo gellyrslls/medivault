@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - v0.4.7
+
+### Added
+
+- Business isolation for products and suppliers
+  - Added business relations in database schema
+  - Products and suppliers now linked to specific businesses
+  - Empty state UI for new businesses with no products
+
+### Changed
+
+- Enhanced authentication persistence
+  - Added user data loading on app mount
+  - Improved token management
+  - Better handling of protected routes
+- Updated controllers with business context
+  - Products filtered by business
+  - Suppliers filtered by business
+  - Added business validation in all operations
+
+### Fixed
+
+- Authentication persistence across page refreshes
+- Empty state handling in products module
+  - Better error messages for new businesses
+  - Friendly UI for empty product lists
+  - Improved loading states
+- API endpoints to verify business ownership
+  - Product operations now check business context
+  - Supplier operations validate business ownership
+
 ## [Unreleased] - v0.4.6
 
 ### Added
