@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import prisma from "./utils/prisma.js";
 
 import { errorHandler } from "./middleware/error.middleware.js";
 
