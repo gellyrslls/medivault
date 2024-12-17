@@ -1,4 +1,4 @@
-import { useReducer, useCallback } from "react";
+import { useReducer, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { AuthContext } from "./AuthContext";
 import { authReducer } from "./authReducer";
@@ -19,12 +19,36 @@ const initialState = {
   user: null,
   token: localStorage.getItem("token"),
   isAuthenticated: Boolean(localStorage.getItem("token")),
-  isLoading: false,
+  isLoading: true, // Changed to true for initial load
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const { toast } = useToast();
+
+  // Load user data on mount if token exists
+  useEffect(() => {
+    async function loadUser() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        dispatch({ type: "AUTH_ERROR" });
+        return;
+      }
+
+      try {
+        const response = await api.get<{ user: User }>("/auth/me");
+        dispatch({
+          type: "AUTH_SUCCESS",
+          payload: { user: response.user, token },
+        });
+      } catch (error) {
+        localStorage.removeItem("token");
+        dispatch({ type: "AUTH_ERROR" });
+      }
+    }
+
+    loadUser();
+  }, []);
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {
