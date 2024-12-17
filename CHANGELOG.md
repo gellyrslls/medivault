@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - v0.4.6
+
+### Added
+
+- Business Profile Implementation
+  - Business profile setup page with form
+  - Business context and state management
+  - Setup flow after authentication
+  - Route protection based on business setup status
+
+### Changed
+
+- Refactored authentication system
+  - Improved context organization
+  - Enhanced API client integration
+  - Fixed login/register form handling
+- Updated routing system to handle business setup flow
+
+### Fixed
+
+- Authentication state management
+- Form submission handling
+- Route protection and redirection
+- Navigation after business setup completion
+
+### Removed
+
+- License number field from business setup form
+- Redundant authentication files and code
+
 ## [Unreleased] - v0.4.5
 
 ### Added
