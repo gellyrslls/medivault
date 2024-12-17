@@ -1,209 +1,277 @@
 import prisma from "../utils/prisma.js";
-import { ApiError } from "../utils/ApiError.js";
+import asyncHandler from "express-async-handler";
 
-// Create product controller
-const createProduct = async (req, res, next) => {
-  try {
-    const product = await prisma.product.create({
-      data: {
-        name: req.body.name,
-        sku: req.body.sku,
-        category: req.body.category,
-        quantity: parseInt(req.body.quantity),
-        minStockLevel: parseInt(req.body.minStockLevel),
-        price: parseFloat(req.body.price),
-        expiryDate: new Date(req.body.expiryDate),
-        description: req.body.description,
-        supplierId: parseInt(req.body.supplierId),
-      },
-      include: {
-        supplier: true,
-      },
-    });
+// @desc    Get all products for business
+// @route   GET /api/products
+// @access  Private
+export const getProducts = asyncHandler(async (req, res) => {
+  const { businessProfile } = req.user;
 
-    res.status(201).json(product);
-  } catch (error) {
-    if (error.code === "P2002") {
-      next(new ApiError(400, "SKU must be unique"));
-    } else {
-      next(error);
-    }
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
   }
-};
 
-// Get all products controller
-const getProducts = async (req, res, next) => {
-  try {
-    const { page = 1, limit = 10, search, category } = req.query;
-    const skip = (page - 1) * Number(limit);
+  const products = await prisma.product.findMany({
+    where: {
+      businessId: businessProfile.id,
+    },
+    include: {
+      supplier: true,
+    },
+  });
 
-    // Build where clause
-    const where = {};
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { sku: { contains: search, mode: "insensitive" } },
-      ];
-    }
-    if (category) {
-      where.category = category;
-    }
+  res.json(products);
+});
 
-    // Get products with pagination
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
-        include: {
-          supplier: true,
-        },
-      }),
-      prisma.product.count({ where }),
-    ]);
+// @desc    Get single product
+// @route   GET /api/products/:id
+// @access  Private
+export const getProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { businessProfile } = req.user;
 
-    res.json({
-      products,
-      totalPages: Math.ceil(total / Number(limit)),
-      currentPage: Number(page),
-      total,
-    });
-  } catch (error) {
-    next(error);
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
   }
-};
 
-// Get single product controller
-const getProduct = async (req, res, next) => {
-  try {
-    const product = await prisma.product.findUnique({
-      where: { id: parseInt(req.params.id) },
-      include: {
-        supplier: true,
-      },
-    });
+  const product = await prisma.product.findFirst({
+    where: {
+      id: parseInt(id),
+      businessId: businessProfile.id,
+    },
+    include: {
+      supplier: true,
+    },
+  });
 
-    if (!product) {
-      throw new ApiError(404, "Product not found");
-    }
-
-    res.json(product);
-  } catch (error) {
-    next(error);
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
   }
-};
 
-// Update product controller
-const updateProduct = async (req, res, next) => {
-  try {
-    const product = await prisma.product.update({
-      where: { id: parseInt(req.params.id) },
-      data: {
-        name: req.body.name,
-        sku: req.body.sku,
-        category: req.body.category,
-        quantity: parseInt(req.body.quantity),
-        minStockLevel: parseInt(req.body.minStockLevel),
-        price: parseFloat(req.body.price),
-        expiryDate: new Date(req.body.expiryDate),
-        description: req.body.description,
-        supplierId: parseInt(req.body.supplierId),
-      },
-      include: {
-        supplier: true,
-      },
-    });
+  res.json(product);
+});
 
-    res.json(product);
-  } catch (error) {
-    if (error.code === "P2025") {
-      next(new ApiError(404, "Product not found"));
-    } else if (error.code === "P2002") {
-      next(new ApiError(400, "SKU must be unique"));
-    } else {
-      next(error);
-    }
+// @desc    Create new product
+// @route   POST /api/products
+// @access  Private
+export const createProduct = asyncHandler(async (req, res) => {
+  const {
+    name,
+    sku,
+    category,
+    quantity,
+    minStockLevel,
+    price,
+    expiryDate,
+    description,
+    supplierId,
+  } = req.body;
+  const { businessProfile } = req.user;
+
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
   }
-};
 
-// Update stock controller
-const updateStock = async (req, res, next) => {
-  try {
-    console.log(
-      "Updating stock for product:",
-      req.params.id,
-      "New quantity:",
-      req.body.quantity
-    );
+  // Verify supplier belongs to business
+  const supplier = await prisma.supplier.findFirst({
+    where: {
+      id: parseInt(supplierId),
+      businessId: businessProfile.id,
+    },
+  });
 
-    const product = await prisma.product.update({
+  if (!supplier) {
+    res.status(404);
+    throw new Error("Supplier not found or doesn't belong to your business");
+  }
+
+  const product = await prisma.product.create({
+    data: {
+      name,
+      sku,
+      category,
+      quantity: parseInt(quantity),
+      minStockLevel: parseInt(minStockLevel),
+      price: parseFloat(price),
+      expiryDate: new Date(expiryDate),
+      description,
+      supplierId: parseInt(supplierId),
+      businessId: businessProfile.id,
+    },
+  });
+
+  res.status(201).json(product);
+});
+
+// @desc    Update product
+// @route   PUT /api/products/:id
+// @access  Private
+export const updateProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const {
+    name,
+    sku,
+    category,
+    quantity,
+    minStockLevel,
+    price,
+    expiryDate,
+    description,
+    supplierId,
+  } = req.body;
+  const { businessProfile } = req.user;
+
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
+  }
+
+  // Check if product exists and belongs to business
+  const existingProduct = await prisma.product.findFirst({
+    where: {
+      id: parseInt(id),
+      businessId: businessProfile.id,
+    },
+  });
+
+  if (!existingProduct) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  // If supplier is being updated, verify it belongs to business
+  if (supplierId) {
+    const supplier = await prisma.supplier.findFirst({
       where: {
-        id: parseInt(req.params.id),
-      },
-      data: {
-        quantity: parseInt(req.body.quantity),
-      },
-      include: {
-        supplier: true,
+        id: parseInt(supplierId),
+        businessId: businessProfile.id,
       },
     });
 
-    console.log("Stock updated successfully:", product);
-    res.json(product);
-  } catch (error) {
-    console.error("Error updating stock:", error);
-    if (error.code === "P2025") {
-      next(new ApiError(404, "Product not found"));
-    } else {
-      next(error);
+    if (!supplier) {
+      res.status(404);
+      throw new Error("Supplier not found or doesn't belong to your business");
     }
   }
-};
 
-// Delete product controller
-const deleteProduct = async (req, res, next) => {
-  try {
-    await prisma.product.delete({
-      where: { id: parseInt(req.params.id) },
-    });
+  const product = await prisma.product.update({
+    where: {
+      id: parseInt(id),
+    },
+    data: {
+      name,
+      sku,
+      category,
+      quantity: quantity ? parseInt(quantity) : undefined,
+      minStockLevel: minStockLevel ? parseInt(minStockLevel) : undefined,
+      price: price ? parseFloat(price) : undefined,
+      expiryDate: expiryDate ? new Date(expiryDate) : undefined,
+      description,
+      supplierId: supplierId ? parseInt(supplierId) : undefined,
+    },
+  });
 
-    res.status(204).send();
-  } catch (error) {
-    if (error.code === "P2025") {
-      next(new ApiError(404, "Product not found"));
-    } else {
-      next(error);
-    }
+  res.json(product);
+});
+
+// @desc    Delete product
+// @route   DELETE /api/products/:id
+// @access  Private
+export const deleteProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { businessProfile } = req.user;
+
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
   }
-};
 
-// Get low stock products controller
-const getLowStockProducts = async (req, res, next) => {
-  try {
-    const products = await prisma.product.findMany({
-      where: {
-        quantity: {
-          lte: prisma.product.fields.minStockLevel,
-        },
-      },
-      include: {
-        supplier: true,
-      },
-    });
+  // Check if product exists and belongs to business
+  const product = await prisma.product.findFirst({
+    where: {
+      id: parseInt(id),
+      businessId: businessProfile.id,
+    },
+  });
 
-    res.json(products);
-  } catch (error) {
-    next(error);
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
   }
-};
 
-export {
-  createProduct,
-  getProducts,
-  getProduct,
-  updateProduct,
-  deleteProduct,
-  getLowStockProducts,
-  updateStock,
-};
+  await prisma.product.delete({
+    where: {
+      id: parseInt(id),
+    },
+  });
+
+  res.json({ message: "Product deleted" });
+});
+
+// @desc    Get low stock products
+// @route   GET /api/products/low-stock
+// @access  Private
+export const getLowStockProducts = asyncHandler(async (req, res) => {
+  const { businessProfile } = req.user;
+
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
+  }
+
+  const products = await prisma.product.findMany({
+    where: {
+      businessId: businessProfile.id,
+      quantity: {
+        lte: prisma.product.fields.minStockLevel,
+      },
+    },
+    include: {
+      supplier: true,
+    },
+  });
+
+  res.json(products);
+});
+
+// @desc    Update product stock
+// @route   PATCH /api/products/:id/stock
+// @access  Private
+export const updateStock = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { quantity } = req.body;
+  const { businessProfile } = req.user;
+
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
+  }
+
+  // Check if product exists and belongs to business
+  const existingProduct = await prisma.product.findFirst({
+    where: {
+      id: parseInt(id),
+      businessId: businessProfile.id,
+    },
+  });
+
+  if (!existingProduct) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  const product = await prisma.product.update({
+    where: {
+      id: parseInt(id),
+    },
+    data: {
+      quantity: parseInt(quantity),
+    },
+  });
+
+  res.json(product);
+});

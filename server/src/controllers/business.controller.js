@@ -68,6 +68,9 @@ export const createBusinessProfile = asyncHandler(async (req, res) => {
     },
   });
 
+  // Update the user in the request
+  req.user.businessProfile = businessProfile;
+
   res.status(201).json(businessProfile);
 });
 
@@ -79,6 +82,18 @@ export const getBusinessProfile = asyncHandler(async (req, res) => {
 
   const businessProfile = await prisma.businessProfile.findUnique({
     where: { userId },
+    include: {
+      products: {
+        include: {
+          supplier: true,
+        },
+      },
+      suppliers: {
+        include: {
+          products: true,
+        },
+      },
+    },
   });
 
   if (!businessProfile) {
@@ -134,10 +149,24 @@ export const checkProfileStatus = asyncHandler(async (req, res) => {
 
   const businessProfile = await prisma.businessProfile.findUnique({
     where: { userId },
+    include: {
+      products: {
+        select: { id: true },
+      },
+      suppliers: {
+        select: { id: true },
+      },
+    },
   });
 
   res.json({
     isSetup: !!businessProfile,
-    profile: businessProfile, // Include the full profile
+    profile: businessProfile,
+    stats: businessProfile
+      ? {
+          totalProducts: businessProfile.products.length,
+          totalSuppliers: businessProfile.suppliers.length,
+        }
+      : null,
   });
 });

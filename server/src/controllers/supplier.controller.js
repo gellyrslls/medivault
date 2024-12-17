@@ -1,123 +1,164 @@
 import prisma from "../utils/prisma.js";
-import { ApiError } from "../utils/ApiError.js";
+import asyncHandler from "express-async-handler";
 
-export const createSupplier = async (req, res, next) => {
-  try {
-    const supplier = await prisma.supplier.create({
-      data: {
-        name: req.body.name,
-        contactPerson: req.body.contactPerson,
-        email: req.body.email,
-        phone: req.body.phone,
-      },
-    });
+// @desc    Get all suppliers for business
+// @route   GET /api/suppliers
+// @access  Private
+export const getSuppliers = asyncHandler(async (req, res) => {
+  const { businessProfile } = req.user;
 
-    res.status(201).json(supplier);
-  } catch (error) {
-    next(error);
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
   }
-};
 
-export const getSuppliers = async (req, res, next) => {
-  try {
-    const { page = 1, limit = 10, search } = req.query;
-    const skip = (page - 1) * Number(limit);
+  const suppliers = await prisma.supplier.findMany({
+    where: {
+      businessId: businessProfile.id,
+    },
+    include: {
+      products: true,
+    },
+  });
 
-    // Build where clause
-    const where = {};
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { contactPerson: { contains: search, mode: "insensitive" } },
-      ];
-    }
+  res.json(suppliers);
+});
 
-    // Get suppliers with pagination
-    const [suppliers, total] = await Promise.all([
-      prisma.supplier.findMany({
-        where,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
-        include: {
-          products: true,
-        },
-      }),
-      prisma.supplier.count({ where }),
-    ]);
+// @desc    Get single supplier
+// @route   GET /api/suppliers/:id
+// @access  Private
+export const getSupplier = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { businessProfile } = req.user;
 
-    res.json({
-      suppliers,
-      totalPages: Math.ceil(total / Number(limit)),
-      currentPage: Number(page),
-      total,
-    });
-  } catch (error) {
-    next(error);
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
   }
-};
 
-export const getSupplier = async (req, res, next) => {
-  try {
-    const supplier = await prisma.supplier.findUnique({
-      where: { id: parseInt(req.params.id) },
-      include: {
-        products: true,
-      },
-    });
+  const supplier = await prisma.supplier.findFirst({
+    where: {
+      id: parseInt(id),
+      businessId: businessProfile.id,
+    },
+    include: {
+      products: true,
+    },
+  });
 
-    if (!supplier) {
-      throw new ApiError(404, "Supplier not found");
-    }
-
-    res.json(supplier);
-  } catch (error) {
-    next(error);
+  if (!supplier) {
+    res.status(404);
+    throw new Error("Supplier not found");
   }
-};
 
-export const updateSupplier = async (req, res, next) => {
-  try {
-    const supplier = await prisma.supplier.update({
-      where: { id: parseInt(req.params.id) },
-      data: {
-        name: req.body.name,
-        contactPerson: req.body.contactPerson,
-        email: req.body.email,
-        phone: req.body.phone,
-      },
-      include: {
-        products: true,
-      },
-    });
+  res.json(supplier);
+});
 
-    res.json(supplier);
-  } catch (error) {
-    if (error.code === "P2025") {
-      next(new ApiError(404, "Supplier not found"));
-    } else {
-      next(error);
-    }
+// @desc    Create new supplier
+// @route   POST /api/suppliers
+// @access  Private
+export const createSupplier = asyncHandler(async (req, res) => {
+  const { name, contactPerson, email, phone } = req.body;
+  const { businessProfile } = req.user;
+
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
   }
-};
 
-export const deleteSupplier = async (req, res, next) => {
-  try {
-    await prisma.supplier.delete({
-      where: { id: parseInt(req.params.id) },
-    });
+  const supplier = await prisma.supplier.create({
+    data: {
+      name,
+      contactPerson,
+      email,
+      phone,
+      businessId: businessProfile.id,
+    },
+  });
 
-    res.status(204).send();
-  } catch (error) {
-    if (error.code === "P2025") {
-      next(new ApiError(404, "Supplier not found"));
-    } else if (error.code === "P2003") {
-      next(
-        new ApiError(400, "Cannot delete supplier with associated products")
-      );
-    } else {
-      next(error);
-    }
+  res.status(201).json(supplier);
+});
+
+// @desc    Update supplier
+// @route   PUT /api/suppliers/:id
+// @access  Private
+export const updateSupplier = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, contactPerson, email, phone } = req.body;
+  const { businessProfile } = req.user;
+
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
   }
-};
+
+  // Check if supplier exists and belongs to business
+  const existingSupplier = await prisma.supplier.findFirst({
+    where: {
+      id: parseInt(id),
+      businessId: businessProfile.id,
+    },
+  });
+
+  if (!existingSupplier) {
+    res.status(404);
+    throw new Error("Supplier not found");
+  }
+
+  const supplier = await prisma.supplier.update({
+    where: {
+      id: parseInt(id),
+    },
+    data: {
+      name,
+      contactPerson,
+      email,
+      phone,
+    },
+  });
+
+  res.json(supplier);
+});
+
+// @desc    Delete supplier
+// @route   DELETE /api/suppliers/:id
+// @access  Private
+export const deleteSupplier = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { businessProfile } = req.user;
+
+  if (!businessProfile) {
+    res.status(400);
+    throw new Error("Business profile not found");
+  }
+
+  // Check if supplier exists and belongs to business
+  const supplier = await prisma.supplier.findFirst({
+    where: {
+      id: parseInt(id),
+      businessId: businessProfile.id,
+    },
+    include: {
+      products: true,
+    },
+  });
+
+  if (!supplier) {
+    res.status(404);
+    throw new Error("Supplier not found");
+  }
+
+  // Check if supplier has any products
+  if (supplier.products.length > 0) {
+    res.status(400);
+    throw new Error("Cannot delete supplier with associated products");
+  }
+
+  await prisma.supplier.delete({
+    where: {
+      id: parseInt(id),
+    },
+  });
+
+  res.json({ message: "Supplier deleted" });
+});
