@@ -15,21 +15,20 @@ export const protect = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Check if user still exists
+    // Check if user still exists and get business profile
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-      },
+      include: {
+        businessProfile: true
+      }
     });
 
     if (!user) {
       throw new ApiError(401, "User no longer exists");
     }
 
-    // Attach user to request
-    req.user = user;  // Attach the actual user object instead of decoded token
+    // Attach user and business profile to request
+    req.user = user;
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {

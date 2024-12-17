@@ -29,6 +29,7 @@ export const register = async (req, res, next) => {
         id: true,
         email: true,
         createdAt: true,
+        businessProfile: true,
       },
     });
 
@@ -53,6 +54,9 @@ export const login = async (req, res, next) => {
     // Find user
     const user = await prisma.user.findUnique({
       where: { email },
+      include: {
+        businessProfile: true,
+      },
     });
 
     if (!user) {
@@ -84,11 +88,12 @@ export const login = async (req, res, next) => {
 export const getProfile = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
+      where: { id: req.user.id }, // Changed from userId to id based on our middleware
       select: {
         id: true,
         email: true,
         createdAt: true,
+        businessProfile: true,
       },
     });
 
@@ -96,7 +101,7 @@ export const getProfile = async (req, res, next) => {
       throw new ApiError(404, "User not found.");
     }
 
-    res.json(user);
+    res.json({ user });
   } catch (error) {
     next(error);
   }
@@ -109,7 +114,7 @@ export const changePassword = async (req, res, next) => {
 
     // Get user with password
     const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
+      where: { id: req.user.id }, // Changed from userId to id
     });
 
     // Verify current password
@@ -126,7 +131,7 @@ export const changePassword = async (req, res, next) => {
 
     // Update password
     await prisma.user.update({
-      where: { id: req.user.userId },
+      where: { id: req.user.id }, // Changed from userId to id
       data: { password: hashedPassword },
     });
 
