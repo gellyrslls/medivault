@@ -2,6 +2,7 @@
 
 import { useProducts } from "@/hooks/useProducts";
 import { useAllSuppliers } from "@/hooks/useAllSuppliers";
+import { useLocation } from "react-router-dom";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,11 +13,12 @@ import { ProductDetails } from "./components/product-details";
 import { EditProductDialog } from "./components/edit-product-dialog";
 import { StockDialog } from "./components/stock-dialog";
 import { DeleteProductDialog } from "./components/delete-product-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "./columns";
 import { PackageX } from "lucide-react";
 
 export default function ProductsPage() {
+  const location = useLocation();
   const {
     data: products,
     isLoading: loadingProducts,
@@ -25,6 +27,7 @@ export default function ProductsPage() {
   const { data: suppliers, isLoading: loadingSupplers } = useAllSuppliers();
 
   // Dialog states
+  const [addProductOpen, setAddProductOpen] = useState(false);
   const [detailsDialog, setDetailsDialog] = useState<{
     open: boolean;
     product: Product | null;
@@ -53,6 +56,23 @@ export default function ProductsPage() {
     open: false,
     product: null,
   });
+
+  // Handle quick actions navigation
+  useEffect(() => {
+    const state = location.state as { action?: string };
+    if (state?.action) {
+      switch (state.action) {
+        case "openAddProduct":
+          setAddProductOpen(true);
+          break;
+        case "openStockUpdate":
+          setStockDialog({ open: true, product: null });
+          break;
+      }
+      // Clear the state
+      window.history.replaceState({}, "");
+    }
+  }, [location.state]);
 
   if (productsError) {
     return (
@@ -90,11 +110,16 @@ export default function ProductsPage() {
             <CardTitle>Products</CardTitle>
             {products && (
               <p className="text-sm text-muted-foreground">
-                Total {products.length} product{products.length === 1 ? "" : "s"}
+                Total {products.length} product
+                {products.length === 1 ? "" : "s"}
               </p>
             )}
           </div>
-          <AddProductDialog suppliers={formattedSuppliers} />
+          <AddProductDialog
+            suppliers={formattedSuppliers}
+            open={addProductOpen}
+            onOpenChange={setAddProductOpen}
+          />
         </CardHeader>
         <CardContent>
           {loadingProducts || loadingSupplers ? (
@@ -122,7 +147,14 @@ export default function ProductsPage() {
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
+      {/* Stock Dialog */}
+      <StockDialog
+        open={stockDialog.open}
+        onOpenChange={(open) => setStockDialog((prev) => ({ ...prev, open }))}
+        product={stockDialog.product}
+      />
+
+      {/* Product Details Dialog */}
       {detailsDialog.product && (
         <ProductDetails
           open={detailsDialog.open}
@@ -132,7 +164,7 @@ export default function ProductsPage() {
           product={detailsDialog.product}
           supplierName={
             formattedSuppliers.find(
-              (s) => s.id === detailsDialog.product.supplierId
+              (s) => s.id === detailsDialog.product?.supplierId
             )?.name || "Unknown Supplier"
           }
           onEdit={() => {
@@ -146,6 +178,7 @@ export default function ProductsPage() {
         />
       )}
 
+      {/* Edit Product Dialog */}
       {editDialog.product && (
         <EditProductDialog
           open={editDialog.open}
@@ -155,14 +188,7 @@ export default function ProductsPage() {
         />
       )}
 
-      {stockDialog.product && (
-        <StockDialog
-          open={stockDialog.open}
-          onOpenChange={(open) => setStockDialog((prev) => ({ ...prev, open }))}
-          product={stockDialog.product}
-        />
-      )}
-
+      {/* Delete Product Dialog */}
       {deleteDialog.product && (
         <DeleteProductDialog
           open={deleteDialog.open}
