@@ -24,7 +24,7 @@ export function ProtectedRoute({
   children,
   requireBusinessSetup = true,
 }: ProtectedRouteProps) {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     isBusinessSetup,
     businessProfile,
@@ -32,37 +32,34 @@ export function ProtectedRoute({
   } = useBusiness();
   const location = useLocation();
 
-  // Don't check business status until we have a logged-in user
-  if (!user && location.pathname !== "/login" && location.pathname !== "/register") {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
+  // Show loading state while checking authentication
   if (authLoading) {
     return <LoadingState />;
   }
 
-  // Only check business setup if we have a logged-in user
-  if (user) {
+  // If not authenticated, redirect to login
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Now handle business setup checks
+  if (requireBusinessSetup) {
+    // Show loading while checking business setup
     if (businessLoading) {
       return <LoadingState />;
     }
 
-    if (
-      requireBusinessSetup &&
-      !isBusinessSetup &&
-      location.pathname !== "/business-setup"
-    ) {
+    // Redirect to business setup if needed
+    if (!isBusinessSetup && location.pathname !== "/business-setup") {
       return <Navigate to="/business-setup" state={{ from: location }} replace />;
     }
 
-    if (
-      location.pathname === "/business-setup" &&
-      isBusinessSetup &&
-      businessProfile
-    ) {
+    // Redirect to dashboard if business is already set up but user is on setup page
+    if (isBusinessSetup && businessProfile && location.pathname === "/business-setup") {
       return <Navigate to="/dashboard" replace />;
     }
   }
 
+  // If all checks pass, render the protected content
   return <>{children}</>;
 }

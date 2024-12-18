@@ -25,40 +25,39 @@ export async function client<T>(
   if (body) {
     config.body = typeof body === "string" ? body : JSON.stringify(body);
   }
-  
-  const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
-  // Handle 401 Unauthorized
-  if (response.status === 401) {
-    localStorage.removeItem("token");
-    throw new Error("Unauthorized access");
-  }
-
-  // Handle 204 No Content
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  // Only try to parse JSON if there's content
   try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, config);
+
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login"; // Force redirect to login
+      throw new Error("Unauthorized access");
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return {} as T;
+    }
+
     const text = await response.text();
     const data = text ? JSON.parse(text) : {};
-    
+
     if (response.ok) {
       return data;
     }
+
+    // Handle error response
     throw new Error(data.message || "Request failed");
   } catch (error) {
-    if (response.ok) {
-      // If response was successful but couldn't parse JSON, return empty object
-      return {} as T;
+    if (error instanceof Error) {
+      throw error;
     }
-    console.error("API Error:", error);
-    throw error;
+    throw new Error("An unexpected error occurred");
   }
 }
 
-// Export the API client for use with React Query and other features
 export const api = {
   async get<T>(endpoint: string, config: Omit<ApiRequestConfig, "body"> = {}) {
     return client<T>(endpoint, { ...config, method: "GET" });

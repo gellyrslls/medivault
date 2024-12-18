@@ -19,35 +19,47 @@ const initialState = {
   user: null,
   token: localStorage.getItem("token"),
   isAuthenticated: Boolean(localStorage.getItem("token")),
-  isLoading: true, // Changed to true for initial load
+  isLoading: true,
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const { toast } = useToast();
 
-  // Load user data on mount if token exists
   useEffect(() => {
+    let isMounted = true;
+
     async function loadUser() {
       const token = localStorage.getItem("token");
+
       if (!token) {
-        dispatch({ type: "AUTH_ERROR" });
+        if (isMounted) {
+          dispatch({ type: "AUTH_ERROR" });
+        }
         return;
       }
 
       try {
         const response = await api.get<{ user: User }>("/auth/me");
-        dispatch({
-          type: "AUTH_SUCCESS",
-          payload: { user: response.user, token },
-        });
-      } catch (error) {
-        localStorage.removeItem("token");
-        dispatch({ type: "AUTH_ERROR" });
+        if (isMounted && response.user) {
+          dispatch({
+            type: "AUTH_SUCCESS",
+            payload: { user: response.user, token },
+          });
+        }
+      } catch {
+        if (isMounted) {
+          localStorage.removeItem("token");
+          dispatch({ type: "AUTH_ERROR" });
+        }
       }
     }
 
     loadUser();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = useCallback(
@@ -60,7 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           credentials
         );
 
-        // Make sure the response matches the User type
         const user: User = {
           id: response.user.id,
           email: response.user.email,
@@ -74,7 +85,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           payload: { user, token: response.token },
         });
       } catch (error) {
+        localStorage.removeItem("token");
         dispatch({ type: "AUTH_ERROR" });
+
         toast({
           variant: "destructive",
           title: "Login Failed",
@@ -97,7 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           credentials
         );
 
-        // Make sure the response matches the User type
         const user: User = {
           id: response.user.id,
           email: response.user.email,
@@ -111,7 +123,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           payload: { user, token: response.token },
         });
       } catch (error) {
+        localStorage.removeItem("token");
         dispatch({ type: "AUTH_ERROR" });
+
         toast({
           variant: "destructive",
           title: "Registration Failed",
@@ -132,16 +146,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, [toast]);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        ...state,
-        login,
-        register,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    user: state.user,
+    token: state.token,
+    isAuthenticated: Boolean(state.user),
+    isLoading: state.isLoading,
+    login,
+    register,
+    logout,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

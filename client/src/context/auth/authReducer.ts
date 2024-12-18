@@ -9,7 +9,11 @@ export type AuthAction =
 export function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
     case "AUTH_START":
-      return { ...state, isLoading: true };
+      return {
+        ...state,
+        isLoading: true,
+        isAuthenticated: false,
+      };
 
     case "AUTH_SUCCESS":
       return {
@@ -21,7 +25,9 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
 
     case "AUTH_ERROR":
       return {
-        ...state,
+        user: null,
+        token: null,
+        isAuthenticated: false,
         isLoading: false,
       };
 
