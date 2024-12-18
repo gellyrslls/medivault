@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { ProductForm } from "./product-form";
 import { useAddProduct } from "@/hooks/useProducts";
-import { useState } from "react";
 import { Plus } from "lucide-react";
 
 // Product type from useProducts hook
@@ -32,32 +31,41 @@ type ProductFormData = Omit<Product, "id">;
 
 interface ProductDialogProps {
   suppliers: { id: string; name: string }[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AddProductDialog({ suppliers }: ProductDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddProductDialog({
+  suppliers,
+  open,
+  onOpenChange,
+}: ProductDialogProps) {
   const { mutateAsync: addProduct, isPending } = useAddProduct();
 
   const handleSubmit = async (data: ProductFormData) => {
-    await addProduct(data);
-    setOpen(false);
+    try {
+      await addProduct(data);
+      onOpenChange?.(false);
+    } catch (error) {
+      console.error("Error adding product:", error);
+    }
   };
 
   return (
-    <Dialog modal={false} open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Product
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {!open && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Product
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add New Product</DialogTitle>
         </DialogHeader>
         <div className="z-0">
-          {" "}
-          {/* This z-index wrapper was key */}
           <ProductForm
             suppliers={suppliers}
             onSubmit={handleSubmit}
@@ -73,8 +81,10 @@ interface EditProductDialogProps {
   product: Product;
   suppliers: { id: string; name: string }[];
   onSubmit: (data: ProductFormData) => Promise<void>;
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   isLoading?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function EditProductDialog({
@@ -83,17 +93,21 @@ export function EditProductDialog({
   onSubmit,
   trigger,
   isLoading,
+  open,
+  onOpenChange,
 }: EditProductDialogProps) {
-  const [open, setOpen] = useState(false);
-
   const handleSubmit = async (data: ProductFormData) => {
-    await onSubmit(data);
-    setOpen(false);
+    try {
+      await onSubmit(data);
+      onOpenChange?.(false);
+    } catch (error) {
+      console.error("Error editing product:", error);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Product</DialogTitle>
