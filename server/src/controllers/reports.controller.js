@@ -4,7 +4,15 @@ import { ApiError } from "../utils/ApiError.js";
 const isExpiringSoon = (expiryDate) => {
   const expiryTime = new Date(expiryDate).getTime();
   const now = new Date().getTime();
-  return expiryTime - now < 1000 * 60 * 60 * 24 * 30; // 30 days
+  const diff = expiryTime - now;
+  // Return true only if product expires within 30 days but hasn't expired yet
+  return diff > 0 && diff < 1000 * 60 * 60 * 24 * 30; // 30 days
+};
+
+const isExpired = (expiryDate) => {
+  const expiryTime = new Date(expiryDate).getTime();
+  const now = new Date().getTime();
+  return expiryTime <= now;
 };
 
 export const getLowStockProducts = async (req, res, next) => {
@@ -57,6 +65,11 @@ export const getInventoryStatus = async (req, res, next) => {
       (product) => product.quantity <= product.minStockLevel
     );
 
+    // Separate expired and expiring products
+    const expiredProducts = products.filter((product) =>
+      isExpired(product.expiryDate)
+    );
+
     const expiringProducts = products.filter((product) =>
       isExpiringSoon(product.expiryDate)
     );
@@ -79,6 +92,7 @@ export const getInventoryStatus = async (req, res, next) => {
       lowStockCount: lowStock.length,
       totalSuppliers: suppliersCount,
       expiringCount: expiringProducts.length,
+      expiredCount: expiredProducts.length,
       products,
     });
   } catch (error) {
@@ -105,29 +119,42 @@ export const getExpiringProducts = async (req, res, next) => {
       },
     });
 
-    // Filter and format expiring products
-    const formattedProducts = products
-      .filter((product) => isExpiringSoon(product.expiryDate))
-      .map((product) => {
-        const expiryDate = new Date(product.expiryDate);
-        const daysUntilExpiry = Math.ceil(
-          (expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-        );
+    // Process all products to include expiry status
+    const formattedProducts = products.map((product) => {
+      const expiryDate = new Date(product.expiryDate);
+      const now = new Date();
+      const daysUntilExpiry = Math.ceil(
+        (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
 
-        return {
-          ...product,
-          id: Number(product.id),
-          daysUntilExpiry,
-        };
+      return {
+        ...product,
+        id: Number(product.id),
+        daysUntilExpiry,
+        status: isExpired(product.expiryDate)
+          ? "expired"
+          : isExpiringSoon(product.expiryDate)
+          ? "expiring"
+          : "valid",
+      };
+    });
+
+    // Sort by expiry date and filter out valid products
+    const expiryProducts = formattedProducts
+      .filter((product) => product.status !== "valid")
+      .sort((a, b) => {
+        // Sort expired products first, then by days until expiry
+        if (a.status === "expired" && b.status !== "expired") return -1;
+        if (a.status !== "expired" && b.status === "expired") return 1;
+        return a.daysUntilExpiry - b.daysUntilExpiry;
       });
 
-    res.json(formattedProducts);
+    res.json(expiryProducts);
   } catch (error) {
     next(error);
   }
 };
 
-// New endpoint for recent activities
 export const getRecentActivities = async (req, res, next) => {
   try {
     const { businessProfile } = req.user;

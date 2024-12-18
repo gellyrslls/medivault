@@ -16,6 +16,7 @@ interface ExpiringProduct {
   sku: string;
   expiryDate: string;
   daysUntilExpiry: number;
+  status: "expired" | "expiring" | "valid";
 }
 
 // Low Stock Report Columns
@@ -71,15 +72,19 @@ export const expiringColumns: ColumnDef<ExpiringProduct>[] = [
   {
     accessorKey: "daysUntilExpiry",
     header: "Days Until Expiry",
+    cell: ({ row }) => {
+      const days = row.original.daysUntilExpiry;
+      return days < 0 ? "Expired" : `${days} days`;
+    },
   },
   {
     id: "status",
     header: "Status",
     cell: ({ row }) => {
-      const days = row.original.daysUntilExpiry;
+      const status = row.original.status;
       return (
-        <Badge variant={days <= 30 ? "destructive" : "secondary"}>
-          {days <= 30 ? "Expiring Soon" : "Expiring"}
+        <Badge variant={status === "expired" ? "destructive" : "secondary"}>
+          {status === "expired" ? "Expired" : "Expiring Soon"}
         </Badge>
       );
     },
