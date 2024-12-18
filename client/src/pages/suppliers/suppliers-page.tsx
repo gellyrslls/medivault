@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSuppliers, useAddSupplier } from "@/hooks/useSuppliers";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Truck } from "lucide-react";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { CreateSupplierDialog } from "./components/create-supplier-dialog";
@@ -13,15 +13,31 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Supplier } from "./columns";
 import { useToast } from "@/hooks/use-toast";
 import type { SupplierFormValues } from "@/pages/suppliers/components/create-supplier-dialog";
+import { useLocation } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function SuppliersPage() {
+  const location = useLocation();
   const [page, setPage] = useState(1);
-  const { data, isLoading, error } = useSuppliers(page, ITEMS_PER_PAGE);
-  const { mutate: addSupplier } = useAddSupplier();
+  const {
+    data,
+    isLoading,
+    error: supplierError,
+  } = useSuppliers(page, ITEMS_PER_PAGE);
+  const { mutate: addSupplier, isPending: isAddingSupplier } = useAddSupplier();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  // Handle navigation state from quick actions
+  useEffect(() => {
+    const state = location.state as { action?: string };
+    if (state?.action === "openAddSupplier") {
+      setIsCreateDialogOpen(true);
+      // Clean up the state
+      window.history.replaceState({}, "");
+    }
+  }, [location]);
 
   // Dialog states
   const [detailsDialog, setDetailsDialog] = useState<{
@@ -52,7 +68,7 @@ export default function SuppliersPage() {
     setPage(newPage);
   };
 
-  if (error) {
+  if (supplierError) {
     return (
       <div className="container mx-auto py-10">
         <Card className="p-6">
@@ -63,6 +79,14 @@ export default function SuppliersPage() {
       </div>
     );
   }
+
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
+      <Truck className="h-12 w-12 mb-4" />
+      <h3 className="text-lg font-medium mb-2">No suppliers found</h3>
+      <p>Add your first supplier to get started.</p>
+    </div>
+  );
 
   const tableColumns = columns({
     onViewDetails: (supplier: Supplier) =>
@@ -86,8 +110,19 @@ export default function SuppliersPage() {
     addSupplier(formData, {
       onSuccess: () => {
         setIsCreateDialogOpen(false);
+        toast({
+          title: "Success",
+          description: "Supplier created successfully",
+        });
         // Reset to first page when adding new supplier
         setPage(1);
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create supplier. Please try again.",
+        });
       },
     });
   };
@@ -117,6 +152,8 @@ export default function SuppliersPage() {
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
             </div>
+          ) : data?.suppliers.length === 0 ? (
+            <EmptyState />
           ) : (
             <DataTable
               columns={tableColumns}
@@ -133,6 +170,7 @@ export default function SuppliersPage() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onSubmit={handleCreateSupplier}
+        isLoading={isAddingSupplier}
       />
 
       {detailsDialog.supplier && (

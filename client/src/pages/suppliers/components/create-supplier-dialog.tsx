@@ -32,12 +32,14 @@ interface CreateSupplierDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: SupplierFormValues) => void;
+  isLoading?: boolean;
 }
 
 export const CreateSupplierDialog: React.FC<CreateSupplierDialogProps> = ({
   open,
   onOpenChange,
   onSubmit,
+  isLoading = false,
 }) => {
   const form = useForm<SupplierFormValues>({
     resolver: zodResolver(supplierFormSchema),
@@ -49,10 +51,15 @@ export const CreateSupplierDialog: React.FC<CreateSupplierDialogProps> = ({
     },
   });
 
+  // Reset form when dialog closes
+  React.useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
+
   const handleSubmit = (data: SupplierFormValues) => {
     onSubmit(data);
-    form.reset();
-    onOpenChange(false);
   };
 
   return (
@@ -73,7 +80,11 @@ export const CreateSupplierDialog: React.FC<CreateSupplierDialogProps> = ({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Supplier name" {...field} />
+                    <Input
+                      placeholder="Supplier name"
+                      {...field}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -86,7 +97,11 @@ export const CreateSupplierDialog: React.FC<CreateSupplierDialogProps> = ({
                 <FormItem>
                   <FormLabel>Contact Person</FormLabel>
                   <FormControl>
-                    <Input placeholder="Contact person name" {...field} />
+                    <Input
+                      placeholder="Contact person name"
+                      {...field}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,6 +118,7 @@ export const CreateSupplierDialog: React.FC<CreateSupplierDialogProps> = ({
                       placeholder="Email address"
                       type="email"
                       {...field}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -116,7 +132,11 @@ export const CreateSupplierDialog: React.FC<CreateSupplierDialogProps> = ({
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Phone number" {...field} />
+                    <Input
+                      placeholder="Phone number"
+                      {...field}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -127,10 +147,13 @@ export const CreateSupplierDialog: React.FC<CreateSupplierDialogProps> = ({
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
-              <Button type="submit">Create Supplier</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Creating..." : "Create Supplier"}
+              </Button>
             </div>
           </form>
         </Form>
