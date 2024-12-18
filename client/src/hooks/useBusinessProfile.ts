@@ -10,7 +10,7 @@ import {
 } from "@/types";
 
 // Query hook to check business setup status
-export function useBusinessSetupStatus() {
+export function useBusinessSetupStatus({ enabled = true } = {}) {
   const { toast } = useToast();
 
   return useQuery<BusinessSetupStatus>({
@@ -20,14 +20,23 @@ export function useBusinessSetupStatus() {
         const response = await api.get<BusinessSetupStatus>("/business/status");
         return response;
       } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to check business setup status.",
-        });
+        // Don't show toast for auth errors
+        if ((error as any)?.message !== "Unauthorized access") {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to check business setup status.",
+          });
+        }
         throw error;
       }
     },
+    enabled, // Control when this query runs
+    retry: (failureCount, error) => {
+      // Don't retry on auth errors
+      if ((error as any)?.message === "Unauthorized access") return false;
+      return failureCount < 3;
+    }
   });
 }
 
@@ -42,14 +51,20 @@ export function useBusinessProfile() {
         const response = await api.get<BusinessProfileResponse>("/business");
         return response.data;
       } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to fetch business profile.",
-        });
+        if ((error as any)?.message !== "Unauthorized access") {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to fetch business profile.",
+          });
+        }
         throw error;
       }
     },
+    retry: (failureCount, error) => {
+      if ((error as any)?.message === "Unauthorized access") return false;
+      return failureCount < 3;
+    }
   });
 }
 
@@ -74,12 +89,14 @@ export function useCreateBusinessProfile() {
         description: "Business profile created successfully",
       });
     },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create business profile. Please try again.",
-      });
+    onError: (error) => {
+      if ((error as any)?.message !== "Unauthorized access") {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create business profile. Please try again.",
+        });
+      }
     },
   });
 }
@@ -104,12 +121,14 @@ export function useUpdateBusinessProfile() {
         description: "Business profile updated successfully",
       });
     },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update business profile. Please try again.",
-      });
+    onError: (error) => {
+      if ((error as any)?.message !== "Unauthorized access") {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update business profile. Please try again.",
+        });
+      }
     },
   });
 }

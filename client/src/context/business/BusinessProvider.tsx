@@ -4,16 +4,18 @@ import { BusinessContext } from "./BusinessContext";
 import { useAuth } from "@/context/auth";
 
 export function BusinessProvider({ children }: { children: React.ReactNode }) {
-  const { data: setupStatus, isLoading, error } = useBusinessSetupStatus();
   const { isAuthenticated } = useAuth();
-
-  const effectiveLoading = isAuthenticated && isLoading;
+  
+  // Only fetch business status if user is authenticated
+  const { data: setupStatus, isLoading, error } = useBusinessSetupStatus({
+    enabled: isAuthenticated // Only run query if authenticated
+  });
 
   const value = {
     isBusinessSetup: setupStatus?.isSetup ?? false,
     businessProfile: setupStatus?.profile ?? null,
-    isLoading: effectiveLoading,
-    error: error as Error | null,
+    isLoading: isAuthenticated && isLoading, // Only show loading if authenticated
+    error: isAuthenticated ? (error as Error | null) : null,
   };
 
   return (
