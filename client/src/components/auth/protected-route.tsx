@@ -32,28 +32,36 @@ export function ProtectedRoute({
   } = useBusiness();
   const location = useLocation();
 
-  if (authLoading || (user && businessLoading)) {
-    return <LoadingState />;
-  }
-
-  if (!user) {
+  // Don't check business status until we have a logged-in user
+  if (!user && location.pathname !== "/login" && location.pathname !== "/register") {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (
-    requireBusinessSetup &&
-    !isBusinessSetup &&
-    location.pathname !== "/business-setup"
-  ) {
-    return <Navigate to="/business-setup" state={{ from: location }} replace />;
+  if (authLoading) {
+    return <LoadingState />;
   }
 
-  if (
-    location.pathname === "/business-setup" &&
-    isBusinessSetup &&
-    businessProfile
-  ) {
-    return <Navigate to="/dashboard" replace />;
+  // Only check business setup if we have a logged-in user
+  if (user) {
+    if (businessLoading) {
+      return <LoadingState />;
+    }
+
+    if (
+      requireBusinessSetup &&
+      !isBusinessSetup &&
+      location.pathname !== "/business-setup"
+    ) {
+      return <Navigate to="/business-setup" state={{ from: location }} replace />;
+    }
+
+    if (
+      location.pathname === "/business-setup" &&
+      isBusinessSetup &&
+      businessProfile
+    ) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;
