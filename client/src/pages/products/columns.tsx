@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
+import { formatCurrency } from "@/utils/formatters";
 
 // Interface from our useProducts hook
 export type Product = {
@@ -119,10 +120,7 @@ export const columns = ({
     header: () => <div className="text-right">Price</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("price"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
+      const formatted = formatCurrency(amount);
 
       return <div className="text-right font-medium">{formatted}</div>;
     },
