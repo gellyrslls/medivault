@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -24,12 +23,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface AuthFormProps {
   mode: "login" | "register";
+  className?: string;
 }
 
-const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
+const AuthForm: React.FC<AuthFormProps> = ({ mode, className }) => {
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const { toast } = useToast();
@@ -68,6 +69,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
       setLoading(true);
       if (mode === "login") {
         await login({ email: values.email, password: values.password });
+        // After successful login, navigate to dashboard
         navigate("/dashboard");
       } else {
         const registerValues = values as z.infer<typeof registerSchema>;
@@ -76,7 +78,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
           password: registerValues.password,
           confirmPassword: registerValues.confirmPassword,
         });
-        navigate("/dashboard");
+        // After successful registration, show success message and navigate to login
+        toast({
+          title: "Registration successful",
+          description: "Please login with your new account",
+        });
+        navigate("/login");
       }
     } catch (error) {
       toast({
@@ -91,60 +98,58 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl">
-          {mode === "login" ? "Sign in" : "Create an account"}
-        </CardTitle>
-        <CardDescription>
-          Enter your email below to {mode === "login" ? "sign in to" : "create"}{" "}
-          your account.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="m@example.com"
-                      type="email"
-                      disabled={loading}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" disabled={loading} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {mode === "register" && (
+    <div className={cn("flex flex-col gap-6", className)}>
+      <Card>
+        <CardHeader className="text-center space-y-0.5">
+          <CardTitle className="text-xl font-bold">
+            {mode === "login" ? "Welcome back" : "Create an account"}
+          </CardTitle>
+          <CardDescription>
+            {mode === "login"
+              ? "Login to your medivault account"
+              : "Enter your information to get started"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-5"
+            >
               <FormField
                 control={form.control}
-                name="confirmPassword"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="m@example.com"
+                        type="email"
+                        disabled={loading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Password</FormLabel>
+                      {mode === "login" && (
+                        <a
+                          href="#"
+                          className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+                        >
+                          Forgot your password?
+                        </a>
+                      )}
+                    </div>
                     <FormControl>
                       <Input type="password" disabled={loading} {...field} />
                     </FormControl>
@@ -152,48 +157,59 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
                   </FormItem>
                 )}
               />
-            )}
-            <Button
-              type="submit"
-              className="w-full bg-neutral-900 text-white"
-              disabled={loading}
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "login" ? "Sign in" : "Create account"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter>
-        <p className="text-sm text-muted-foreground">
-          {mode === "login" ? (
-            <>
-              Don't have an account?{" "}
-              <Button
-                variant="link"
-                className="px-0"
-                onClick={() => navigate("/register")}
-                disabled={loading}
-              >
-                Sign up
+              {mode === "register" && (
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" disabled={loading} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {mode === "login" ? "Login" : "Create account"}
               </Button>
-            </>
-          ) : (
-            <>
-              Already have an account?{" "}
-              <Button
-                variant="link"
-                className="px-0"
-                onClick={() => navigate("/login")}
-                disabled={loading}
-              >
-                Sign in
-              </Button>
-            </>
-          )}
-        </p>
-      </CardFooter>
-    </Card>
+              <div className="text-center text-sm">
+                {mode === "login" ? (
+                  <>
+                    Don&apos;t have an account?{" "}
+                    <Button
+                      variant="link"
+                      className="px-0.25 font-normal underline"
+                      onClick={() => navigate("/register")}
+                      disabled={loading}
+                      type="button"
+                    >
+                      Sign up
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    Already have an account?{" "}
+                    <Button
+                      variant="link"
+                      className="px-1 font-normal"
+                      onClick={() => navigate("/login")}
+                      disabled={loading}
+                      type="button"
+                    >
+                      Sign in
+                    </Button>
+                  </>
+                )}
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
