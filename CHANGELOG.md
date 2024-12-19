@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - v0.4.8
+
+### Added
+
+- Enhanced Quick Actions functionality
+  - Direct routing to specific actions in products and suppliers
+  - Automatic dialog opening from quick actions
+  - Loading states for all quick action operations
+- Controlled dialog states
+  - Added controlled state support for product dialogs
+  - Enhanced supplier creation dialog
+  - Improved stock update dialog
+
+### Changed
+
+- Improved dialog state management
+  - Unified dialog handling across components
+  - Better TypeScript type safety
+  - Enhanced error handling in forms
+- Enhanced user experience
+  - More consistent loading states
+  - Better error feedback
+  - Smoother dialog transitions
+
+### Fixed
+
+- Quick actions navigation state cleanup
+- Product dialog controlled state implementation
+- Stock dialog null product handling
+- TypeScript and ESLint warnings
+- Dialog state management in suppliers page
+
 ## [Unreleased] - v0.4.7
 
 ### Added
