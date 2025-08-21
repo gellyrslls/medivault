@@ -1,78 +1,94 @@
-# medivault
+<h1>medivault</h1>
 
-medivault is a full-stack pharmacy inventory management application that allows users to manage pharmaceutical stock efficiently.
+A full-stack inventory management system designed for pharmacies to efficiently track products, manage suppliers, and generate vital reports.
 
-## Prerequisites
+## Key Features
 
-To get started with MediVault, ensure that you have the following tools installed and properly configured on your system:
+- **Secure Authentication**: JWT-based authentication with user registration and login.
+- **Business Profile Management**: A dedicated setup flow for users to create and manage their business profile.
+- **Product Management**: Full CRUD (Create, Read, Update, Delete) functionality for pharmaceutical products, including stock levels, pricing, and expiry dates.
+- **Supplier Management**: A complete module for adding, updating, and viewing supplier information and their associated products.
+- **Automated Reports**: A reporting dashboard that automatically generates lists of low-stock and expiring products.
+- **Recent Activity Feed**: A live-updating feed on the dashboard showing the latest actions taken within the system.
 
-1. **Git**: Version control system to clone and manage the project repository.
-   * [Installation Guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+## Tech Stack
 
-2. **Node.js**: JavaScript runtime for the client and server.
-   * [Installation Guide](https://nodejs.org/en/download/)
-   * Required version: v20.17.0 or later
+### Frontend (Client)
 
-3. **PostgreSQL**: Relational database for backend storage.
-   * [Installation Guide](https://www.postgresql.org/download/)
-   * Make sure PostgreSQL is running locally
-   * Default database name: `medivault`
+- **Framework**: [React](https://react.dev/) (with Vite)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Routing**: [React Router](https://reactrouter.com/)
+- **State Management**: [TanStack Query (React Query)](https://tanstack.com/query/latest)
 
-## Setup
+### Backend (Server)
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/gellyrslls/medivault.git
-cd medivault
-```
+- **Runtime**: [Node.js](https://nodejs.org/)
+- **Framework**: [Express.js](https://expressjs.com/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/)
+- **ORM**: [Prisma](https://www.prisma.io/)
 
-### 2. Install Dependencies
-```bash
-# Frontend
-cd client && npm install
+## Getting Started
 
-# Backend
-cd ../server && npm install
-```
+To get a local copy up and running, please follow these steps.
 
-### 3. Set Up PostgreSQL Database
- * [Setup Guide](https://www.pgadmin.org/docs/)
+### Prerequisites
 
-Create a `.env` file in the server directory with the following content:
+- **Node.js** (v18 or later)
+- **PostgreSQL** database installed and running.
+- **npm** (comes with Node.js)
 
-```env
-# Backend .env
-DATABASE_URL="postgresql://postgres:your_password@localhost:5432/medivault"
-JWT_SECRET="your_secret_key"  # Replace with any strong random string
-PORT=5000
-```
+### Installation & Setup
 
-### 4. Run Prisma Migrations
-```bash
-cd server
-npx prisma migrate dev --name init
-```
+1.  **Clone the Repository**
 
-### 5. Start Development Servers
-```bash
-# Backend
-cd server && npm run dev
+    ```sh
+    git clone https://github.com/gellyrslls/medivault.git
+    cd medivault
+    ```
 
-# Frontend (in a new terminal)
-cd client && npm run dev
-```
+2.  **Setup the Backend Server**
 
-### 6. Access the Application
-* Backend runs at: `http://localhost:5000`
-* Frontend runs at: `http://localhost:5173` (default Vite port)
+    ```sh
+    # Navigate to the server directory
+    cd server
 
-## Notes
+    # Install dependencies
+    npm install
 
-1. **Database Name**: By default, the database will be created as `medivault`. Ensure your `DATABASE_URL` in `.env` uses this name.
-2. **JWT_SECRET**: Replace `your_secret_key` in the `.env` file with any strong random string.
+    # Create your environment file from the example
+    cp .env.example .env
+    ```
 
-## Testing the App
+    > [!IMPORTANT]
+    > Open the new `.env` file and update your `DATABASE_URL` with your PostgreSQL password and `JWT_SECRET` with a strong, random string.
 
-1. Ensure PostgreSQL is running and the database is correctly set up.
-2. Start both the frontend and backend servers.
-3. Access the app in your browser at `http://localhost:5173`.
+    ```sh
+    # Run database migrations to set up the schema
+    npx prisma migrate dev
+    ```
+
+3.  **Setup the Frontend Client**
+
+    ```sh
+    # Navigate to the client directory from the project root
+    cd ../client
+
+    # Install dependencies
+    npm install
+    ```
+
+    > [!NOTE]
+    > The client expects the server to be running on `http://localhost:5000/api`. This can be configured in a `.env` file in the `client` directory.
+
+4.  **Run the Application**
+
+    - Start the **backend server** (in one terminal, from the `/server` directory):
+      ```sh
+      npm run dev
+      ```
+    - Start the **frontend client** (in a _new_ terminal, from the `/client` directory):
+      ```sh
+      npm run dev
+      ```
+
+    The application will be available at **`http://localhost:5173`**.
